@@ -1,13 +1,14 @@
 package com.github.dreamyoung.mprelation;
 
-
 import java.io.File;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -18,8 +19,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 public class AutoMapper extends AbstractAutoMapper {
 	@Autowired(required = false)
 	ApplicationContext applicationContext;
-	
-	
+
 	private String[] entityPackages;
 
 	public AutoMapper() {
@@ -138,30 +138,115 @@ public class AutoMapper extends AbstractAutoMapper {
 		return (BaseMapper<M>) applicationContext.getBean(entityClass);
 	}
 
-	/**
-	 * 即刻一次产生关联加载
-	 * 
-	 * @param <T>
-	 * @param t
-	 * @return
-	 */
 	public <T> T mapperEntity(T t) {
-		t = super.manyToOne(t);
-		t = super.oneToMany(t);
-		t = super.oneToOne(t);
+		if (t != null) {
+			t = super.manyToOne(t);
+			t = super.oneToMany(t);
+			t = super.oneToOne(t);
+			t = super.manyToMany(t);
+		}
+		return t;
+	}
+
+	public <T> T mapperEntity(T t, boolean fetchEager) {
+		if (t != null) {
+			t = super.manyToOne(t, fetchEager);
+			t = super.oneToMany(t, fetchEager);
+			t = super.oneToOne(t, fetchEager);
+			t = super.manyToMany(t, fetchEager);
+		}
+		return t;
+	}
+
+	public <T> T mapperEntity(T t, String propertyName) {
+		if (t != null) {
+			t = super.manyToOne(t, propertyName);
+			t = super.oneToMany(t, propertyName);
+			t = super.oneToOne(t, propertyName);
+			t = super.manyToMany(t, propertyName);
+		}
 		return t;
 	}
 
 	public <T> List<T> mapperEntityList(List<T> list) {
-		ListIterator<T> iter = list.listIterator();
+		if (list != null && list.size() > 0) {
+			for (int i = 0; i < list.size(); i++) {
+				T t = list.get(i);
+				t = super.manyToOne(t);
+				t = super.oneToMany(t);
+				t = super.oneToOne(t);
+				t = super.manyToMany(t);
+			}
+		}
+
+		return list;
+	}
+
+	public <T> List<T> mapperEntityList(List<T> list, boolean fetchEager) {
+		if (list != null && list.size() > 0) {
+			for (int i = 0; i < list.size(); i++) {
+				T t = list.get(i);
+				t = super.manyToOne(t, fetchEager);
+				t = super.oneToMany(t, fetchEager);
+				t = super.oneToOne(t, fetchEager);
+				t = super.manyToMany(t, fetchEager);
+			}
+		}
+
+		return list;
+	}
+
+	public <T> List<T> mapperEntityList(List<T> list, String propertyName) {
+		if (list != null && list.size() > 0) {
+			for (int i = 0; i < list.size(); i++) {
+				T t = list.get(i);
+				t = super.manyToOne(t, propertyName);
+				t = super.oneToMany(t, propertyName);
+				t = super.oneToOne(t, propertyName);
+				t = super.manyToMany(t, propertyName);
+			}
+		}
+
+		return list;
+	}
+
+	public <T> Set<T> mapperEntitySet(Set<T> set) {
+		Iterator<T> iter = set.iterator();
 		while (iter.hasNext()) {
 			T t = iter.next();
 			t = super.manyToOne(t);
 			t = super.oneToMany(t);
 			t = super.oneToOne(t);
+			t = super.manyToMany(t);
 		}
 
-		return list;
+		return set;
+	}
+
+	public <T> Set<T> mapperEntitySet(Set<T> set, boolean fetchEager) {
+		Iterator<T> iter = set.iterator();
+		while (iter.hasNext()) {
+			T t = iter.next();
+			t = super.manyToOne(t, fetchEager);
+			t = super.oneToMany(t, fetchEager);
+			t = super.oneToOne(t, fetchEager);
+			t = super.manyToMany(t, fetchEager);
+		}
+
+		return set;
+	}
+
+	public <T> Set<T> mapperEntitySet(Set<T> set, String propertyName) {
+		Iterator<T> iter = set.iterator();
+		while (iter.hasNext()) {
+			T t = iter.next();
+			t = super.manyToOne(t, propertyName);
+			t = super.oneToMany(t, propertyName);
+			t = super.oneToOne(t, propertyName);
+			t = super.manyToMany(t, propertyName);
+		}
+
+		return set;
 	}
 
 	public <E extends IPage<T>, T> E mapperEntityPage(E page) {
@@ -172,16 +257,38 @@ public class AutoMapper extends AbstractAutoMapper {
 			t = super.manyToOne(t);
 			t = super.oneToMany(t);
 			t = super.oneToOne(t);
+			t = super.manyToMany(t);
 		}
 
 		return page;
 	}
 
-	public <T> T mapperEntityNormal(T t) {
-		t = super.manyToOne(t, true);
-		t = super.oneToMany(t, false);
-		t = super.oneToOne(t, true);
-		return t;
+	public <E extends IPage<T>, T> E mapperEntityPage(E page, boolean fetchEager) {
+		List<T> list = page.getRecords();
+		ListIterator<T> iter = list.listIterator();
+		while (iter.hasNext()) {
+			T t = iter.next();
+			t = super.manyToOne(t, fetchEager);
+			t = super.oneToMany(t, fetchEager);
+			t = super.oneToOne(t, fetchEager);
+			t = super.manyToMany(t, fetchEager);
+		}
+
+		return page;
+	}
+
+	public <E extends IPage<T>, T> E mapperEntityPage(E page, String propertyName) {
+		List<T> list = page.getRecords();
+		ListIterator<T> iter = list.listIterator();
+		while (iter.hasNext()) {
+			T t = iter.next();
+			t = super.manyToOne(t, propertyName);
+			t = super.oneToMany(t, propertyName);
+			t = super.oneToOne(t, propertyName);
+			t = super.manyToMany(t, propertyName);
+		}
+
+		return page;
 	}
 
 	public String[] getEntityPackages() {

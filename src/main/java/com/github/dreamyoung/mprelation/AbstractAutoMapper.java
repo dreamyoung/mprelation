@@ -4,13 +4,15 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 
 @SuppressWarnings({ "unused", "unchecked" })
 public abstract class AbstractAutoMapper {
@@ -20,29 +22,25 @@ public abstract class AbstractAutoMapper {
 	protected Map<String, String[]> entityMap = new HashMap<String, String[]>();
 
 	public <T, E> T oneToMany(T entity) {
-		return oneToManyEager(entity, null, false);
+		return oneToMany(entity, null, false);
 	}
 
 	public <T, E> T oneToMany(T entity, boolean fetchEager) {
-		return oneToManyEager(entity, null, fetchEager);
+		return oneToMany(entity, null, fetchEager);
 	}
 
-	public <T, E> T oneToManyEager(T entity, String propertyName) {
-		return oneToManyEager(entity, propertyName, true);
-	}
-
-	public <T, E> T oneToManyEager(T entity, String... propertyNames) {
+	public <T, E> T oneToMany(T entity, String... propertyNames) {
 		String[] names = propertyNames;
 		if (names != null && names.length > 0) {
 			for (int i = 0; i < names.length; i++) {
-				oneToManyEager(entity, names[i], true);
+				oneToMany(entity, names[i], true);
 			}
 		}
 
 		return entity;
 	}
 
-	public <T, E> T oneToManyEager(T entity, String propertyName, boolean fetchEager) {
+	public <T, E> T oneToMany(T entity, String propertyName, boolean fetchEager) {
 		if (!entityMap.containsKey(entity.getClass().getName() + "." + RelationType.ONETOMANY.name())) {
 			return entity;
 		}
@@ -86,6 +84,11 @@ public abstract class AbstractAutoMapper {
 					if (propertyName != null || fetchEager == true) {
 						lazy = false;
 					}
+					
+					
+					
+					
+					
 					if (!lazy) {
 						JoinColumn joinColumn = fc.getJoinColumn();
 						String column = JoinColumnUtil.getColumn(fc);
@@ -106,6 +109,8 @@ public abstract class AbstractAutoMapper {
 						BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
 						List<E> list = mapper.selectList(new QueryWrapper<E>().eq(refColumn, columnPropertyValue));
 						fc.setFieldValueByList(list);
+					}else {//lazy AOP
+												
 					}
 				}
 			}
@@ -116,29 +121,29 @@ public abstract class AbstractAutoMapper {
 	}
 
 	public <T, E> T oneToOne(T entity) {
-		return oneToOneEager(entity, null, false);
+		return oneToOne(entity, null, false);
 	}
 
 	public <T, E> T oneToOne(T entity, boolean fetchEager) {
-		return oneToOneEager(entity, null, fetchEager);
+		return oneToOne(entity, null, fetchEager);
 	}
 
-	public <T, E> T oneToOneEager(T entity, String propertyName) {
-		return oneToOneEager(entity, propertyName, true);
+	public <T, E> T oneToOne(T entity, String propertyName) {
+		return oneToOne(entity, propertyName, true);
 	}
 
-	public <T, E> T oneToOneEager(T entity, String... propertyNames) {
+	public <T, E> T oneToOne(T entity, String... propertyNames) {
 		String[] names = propertyNames;
 		if (names != null && names.length > 0) {
 			for (int i = 0; i < names.length; i++) {
-				oneToOneEager(entity, names[i], true);
+				oneToOne(entity, names[i], true);
 			}
 		}
 
 		return entity;
 	}
 
-	public <T, E> T oneToOneEager(T entity, String propertyName, boolean fetchEager) {
+	public <T, E> T oneToOne(T entity, String propertyName, boolean fetchEager) {
 		if (!entityMap.containsKey(entity.getClass().getName() + "." + RelationType.ONETOONE.name())) {
 			return entity;
 		}
@@ -212,29 +217,29 @@ public abstract class AbstractAutoMapper {
 	}
 
 	public <T, E> T manyToOne(T entity) {
-		return manyToOneEager(entity, null, false);
+		return manyToOne(entity, null, false);
 	}
 
 	public <T, E> T manyToOne(T entity, boolean fetchEager) {
-		return manyToOneEager(entity, null, fetchEager);
+		return manyToOne(entity, null, fetchEager);
 	}
 
-	public <T, E> T manyToOneEager(T entity, String propertyName) {
-		return manyToOneEager(entity, propertyName, true);
+	public <T, E> T manyToOne(T entity, String propertyName) {
+		return manyToOne(entity, propertyName, true);
 	}
 
-	public <T, E> T manyToOneEager(T entity, String... propertyNames) {
+	public <T, E> T manyToOne(T entity, String... propertyNames) {
 		String[] names = propertyNames;
 		if (names != null && names.length > 0) {
 			for (int i = 0; i < names.length; i++) {
-				manyToOneEager(entity, names[i], true);
+				manyToOne(entity, names[i], true);
 			}
 		}
 
 		return entity;
 	}
 
-	public <T, E> T manyToOneEager(T entity, String propertyName, boolean fetchEager) {
+	public <T, E> T manyToOne(T entity, String propertyName, boolean fetchEager) {
 		if (!entityMap.containsKey(entity.getClass().getName() + "." + RelationType.MANYTOONE.name())) {
 			return entity;
 		}
@@ -309,29 +314,29 @@ public abstract class AbstractAutoMapper {
 
 	/////// many to many///////
 	public <T, E> T manyToMany(T entity) {
-		return manyToManyEager(entity, null, false);
+		return manyToMany(entity, null, false);
 	}
 
 	public <T, E> T manyToMany(T entity, boolean fetchEager) {
-		return manyToManyEager(entity, null, fetchEager);
+		return manyToMany(entity, null, fetchEager);
 	}
 
 	public <T, E> T manyToManyEager(T entity, String propertyName) {
-		return manyToManyEager(entity, propertyName, true);
+		return manyToMany(entity, propertyName, true);
 	}
 
-	public <T, E> T manyToManyEager(T entity, String... propertyNames) {
+	public <T, E> T manyToMany(T entity, String... propertyNames) {
 		String[] names = propertyNames;
 		if (names != null && names.length > 0) {
 			for (int i = 0; i < names.length; i++) {
-				manyToManyEager(entity, names[i], true);
+				manyToMany(entity, names[i], true);
 			}
 		}
 
 		return entity;
 	}
 
-	public <T, E, X> T manyToManyEager(T entity, String propertyName, boolean fetchEager) {
+	public <T, E, X> T manyToMany(T entity, String propertyName, boolean fetchEager) {
 		if (!entityMap.containsKey(entity.getClass().getName() + "." + RelationType.MANYTOMANY.name())) {
 			return entity;
 		}
