@@ -1,5 +1,5 @@
 -----------------
-# MP-Relation #
+# MPRelation #
 -----------------
 
 mybatis-plus relations one2one one2many many2many
