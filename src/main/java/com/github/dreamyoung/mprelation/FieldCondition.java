@@ -118,7 +118,7 @@ public class FieldCondition<T> {
 					className.append(".");
 				}
 				className.append("mapper.");
-				
+
 				if (joinTable.entityClass() != null && joinTable.entityClass() != void.class) {
 					className.append(joinTable.entityClass().getSimpleName());
 				} else {
@@ -137,7 +137,7 @@ public class FieldCondition<T> {
 						className.append(joinEntityName);
 					}
 				}
-				
+
 				className.append("Mapper");
 
 				try {
@@ -287,7 +287,6 @@ public class FieldCondition<T> {
 				+ ", joinColumns=" + joinColumns + ", joinTable=" + joinTable + ", entityMapper=" + entityMapper + "]";
 	}
 
-
 	public TableId getTableId() {
 		return tableId;
 	}
@@ -335,7 +334,7 @@ public class FieldCondition<T> {
 				if (this.getFieldCollectionType() == FieldCollectionType.SET) {
 					// list to set
 					Set<E> set = new HashSet<E>();
-					for (E e : list) {
+					for (E e : list) {// list 被访问，导致延迟立即加载，延迟失败！
 						set.add(e);
 					}
 					field.set(entity, set);
@@ -344,6 +343,18 @@ public class FieldCondition<T> {
 					field.set(entity, list);
 				}
 
+			} catch (Exception e) {
+				throw new OneToManyException(
+						String.format("{0} call setter {1} is not correct!", entity, field.getName()));
+			}
+		}
+	}
+
+	public <E> void setFieldValueBySet(Set<E> set) {
+		if (set != null) {
+			field.setAccessible(true);
+			try {
+				field.set(entity, set);
 			} catch (Exception e) {
 				throw new OneToManyException(
 						String.format("{0} call setter {1} is not correct!", entity, field.getName()));

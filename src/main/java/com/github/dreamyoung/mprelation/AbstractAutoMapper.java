@@ -2,6 +2,7 @@ package com.github.dreamyoung.mprelation;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,13 +10,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.mybatis.logging.LoggerFactory;
+import org.springframework.cglib.proxy.Enhancer;
+import org.springframework.cglib.proxy.LazyLoader;
+
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
+import com.github.dreamyoung.mprelation.FieldCondition.FieldCollectionType;
+
+import org.apache.ibatis.logging.Log;
+import org.apache.ibatis.logging.LogFactory;
 
 @SuppressWarnings({ "unused", "unchecked" })
 public abstract class AbstractAutoMapper {
+	protected Log log = LogFactory.getLog(getClass());
 
 	public abstract <M> BaseMapper<M> getMapperBean(Class<M> entityClass);
 
@@ -84,33 +94,73 @@ public abstract class AbstractAutoMapper {
 					if (propertyName != null || fetchEager == true) {
 						lazy = false;
 					}
-					
-					
-					
-					
-					
+
+					JoinColumn joinColumn = fc.getJoinColumn();
+					String column = JoinColumnUtil.getColumn(fc);
+					String refColumn = JoinColumnUtil.getRefColumn(fc);
+					String columnProperty = JoinColumnUtil.getColumnPropertyName(fc);
+					Serializable columnPropertyValue = null;
+
+					try {
+						Field columnField = entityClass.getDeclaredField(columnProperty);
+						columnField.setAccessible(true);
+						columnPropertyValue = (Serializable) columnField.get(entity);
+					} catch (Exception e) {
+						throw new OneToManyException("refProperty/refPropertyValue one to many id is not correct!");
+					}
+
 					if (!lazy) {
-						JoinColumn joinColumn = fc.getJoinColumn();
-						String column = JoinColumnUtil.getColumn(fc);
-						String refColumn = JoinColumnUtil.getRefColumn(fc);
-						String columnProperty = JoinColumnUtil.getColumnPropertyName(fc);
-						Serializable columnPropertyValue = null;
-
-						try {
-							Field columnField = entityClass.getDeclaredField(columnProperty);
-							columnField.setAccessible(true);
-							columnPropertyValue = (Serializable) columnField.get(entity);
-						} catch (Exception e) {
-							throw new OneToManyException("refProperty/refPropertyValue one to many id is not correct!");
-						}
-
 						// Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 						Class<?> mapperClass = fc.getMapperClass();
 						BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
 						List<E> list = mapper.selectList(new QueryWrapper<E>().eq(refColumn, columnPropertyValue));
 						fc.setFieldValueByList(list);
-					}else {//lazy AOP
-												
+					} else {
+						final Serializable columnPropertyValueX = columnPropertyValue;
+						Enhancer enhancer = new Enhancer();
+						enhancer.setSuperclass(ArrayList.class);
+
+						if (fc.getFieldCollectionType() == FieldCollectionType.SET) {
+							@SuppressWarnings("static-access")
+							Set<E> set = (Set<E>) enhancer.create(Set.class, new LazyLoader() {
+								@Override
+								public Set<E> loadObject() throws Exception {
+									// Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
+									Class<?> mapperClass = fc.getMapperClass();
+									BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+									List<E> list = mapper
+											.selectList(new QueryWrapper<E>().eq(refColumn, columnPropertyValueX));
+
+									Set<E> set = null;
+									if (list != null) {
+										set = new HashSet<E>();
+										for (E e : list) {
+											set.add(e);
+										}
+									}
+									return set;
+								}
+
+							});
+
+							fc.setFieldValueBySet(set);
+						} else {
+							@SuppressWarnings("static-access")
+							List<E> list = (List<E>) enhancer.create(List.class, new LazyLoader() {
+								@Override
+								public List<E> loadObject() throws Exception {
+									// Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
+									Class<?> mapperClass = fc.getMapperClass();
+									BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+									List<E> list = mapper
+											.selectList(new QueryWrapper<E>().eq(refColumn, columnPropertyValueX));
+									return list;
+								}
+
+							});
+
+							fc.setFieldValueByList(list);
+						}
 					}
 				}
 			}
@@ -186,25 +236,40 @@ public abstract class AbstractAutoMapper {
 					if (propertyName != null || fetchEager == true) {
 						lazy = false;
 					}
+
+					JoinColumn joinColumn = fc.getJoinColumn();
+					String column = JoinColumnUtil.getColumn(fc);
+					String refColumn = JoinColumnUtil.getRefColumn(fc);
+					String columnProperty = JoinColumnUtil.getColumnPropertyName(fc);
+					Serializable columnPropertyValue = null;
+
+					try {
+						Field columnField = entityClass.getDeclaredField(columnProperty);
+						columnField.setAccessible(true);
+						columnPropertyValue = (Serializable) columnField.get(entity);
+					} catch (Exception e) {
+						throw new OneToOneException("refProperty/refPropertyValue one to one id is not correct!");
+					}
+
 					if (!lazy) {
-						JoinColumn joinColumn = fc.getJoinColumn();
-						String column = JoinColumnUtil.getColumn(fc);
-						String refColumn = JoinColumnUtil.getRefColumn(fc);
-						String columnProperty = JoinColumnUtil.getColumnPropertyName(fc);
-						Serializable columnPropertyValue = null;
-
-						try {
-							Field columnField = entityClass.getDeclaredField(columnProperty);
-							columnField.setAccessible(true);
-							columnPropertyValue = (Serializable) columnField.get(entity);
-						} catch (Exception e) {
-							throw new OneToOneException("refProperty/refPropertyValue one to one id is not correct!");
-						}
-
 						// Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 						Class<?> mapperClass = fc.getMapperClass();
 						BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
 						E e = (E) mapper.selectOne(new QueryWrapper<E>().eq(refColumn, columnPropertyValue));
+						fc.setFieldValueByObject(e);
+					} else {
+						final Serializable columnPropertyValueX = columnPropertyValue;
+						E e = (E) Enhancer.create(fc.getFieldClass(), new LazyLoader() {
+							@Override
+							public E loadObject() throws Exception {
+								Class<?> mapperClass = fc.getMapperClass();
+								BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+								E e = (E) mapper.selectOne(new QueryWrapper<E>().eq(refColumn, columnPropertyValueX));
+								return e;
+							}
+
+						});
+
 						fc.setFieldValueByObject(e);
 					}
 				}
@@ -282,26 +347,40 @@ public abstract class AbstractAutoMapper {
 					if (propertyName != null || fetchEager == true) {
 						lazy = false;
 					}
+
+					JoinColumn joinColumn = fc.getJoinColumn();
+					String column = JoinColumnUtil.getColumn(fc);
+					String refColumn = JoinColumnUtil.getRefColumn(fc);
+					String columnProperty = JoinColumnUtil.getColumnPropertyName(fc);
+					Serializable columnPropertyValue = null;
+
+					try {
+						Field columnField = entityClass.getDeclaredField(columnProperty);
+						columnField.setAccessible(true);
+						columnPropertyValue = (Serializable) columnField.get(entity);
+					} catch (Exception e) {
+						throw new OneToOneException("refProperty/refPropertyValue many to one id is not correct!");
+					}
+
 					if (!lazy) {
-						JoinColumn joinColumn = fc.getJoinColumn();
-						String column = JoinColumnUtil.getColumn(fc);
-						String refColumn = JoinColumnUtil.getRefColumn(fc);
-						String columnProperty = JoinColumnUtil.getColumnPropertyName(fc);
-						Serializable columnPropertyValue = null;
-
-						try {
-							Field columnField = entityClass.getDeclaredField(columnProperty);
-							columnField.setAccessible(true);
-							columnPropertyValue = (Serializable) columnField.get(entity);
-						} catch (Exception e) {
-							throw new OneToOneException("refProperty/refPropertyValue many to one id is not correct!");
-						}
-
 						// Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 						Class<?> mapperClass = fc.getMapperClass();
-
 						BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
 						E e = (E) mapper.selectOne(new QueryWrapper<E>().eq(refColumn, columnPropertyValue));
+						fc.setFieldValueByObject(e);
+					} else {
+						final Serializable columnPropertyValueX = columnPropertyValue;
+						E e = (E) Enhancer.create(fc.getFieldClass(), new LazyLoader() {
+							@Override
+							public E loadObject() throws Exception {
+								Class<?> mapperClass = fc.getMapperClass();
+								BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+								E e = (E) mapper.selectOne(new QueryWrapper<E>().eq(refColumn, columnPropertyValueX));
+								return e;
+							}
+
+						});
+
 						fc.setFieldValueByObject(e);
 					}
 				}
@@ -321,7 +400,7 @@ public abstract class AbstractAutoMapper {
 		return manyToMany(entity, null, fetchEager);
 	}
 
-	public <T, E> T manyToManyEager(T entity, String propertyName) {
+	public <T, E> T manyToMany(T entity, String propertyName) {
 		return manyToMany(entity, propertyName, true);
 	}
 
@@ -379,42 +458,114 @@ public abstract class AbstractAutoMapper {
 					if (propertyName != null || fetchEager == true) {
 						lazy = false;
 					}
+
+					JoinColumn joinColumn = fc.getJoinColumn();
+					String column = JoinColumnUtil.getColumn(fc);
+					String refColumn = JoinColumnUtil.getRefColumn(fc);
+					String columnProperty = JoinColumnUtil.getColumnPropertyName(fc);
+					Serializable columnPropertyValue = null;
+
+					try {
+						Field columnField = entityClass.getDeclaredField(columnProperty);
+						columnField.setAccessible(true);
+						columnPropertyValue = (Serializable) columnField.get(entity);
+					} catch (Exception e) {
+						throw new OneToOneException("refProperty/refPropertyValue many to many id is not correct!");
+					}
+
 					if (!lazy) {
-						JoinColumn joinColumn = fc.getJoinColumn();
-						String column = JoinColumnUtil.getColumn(fc);
-						String refColumn = JoinColumnUtil.getRefColumn(fc);
-						String columnProperty = JoinColumnUtil.getColumnPropertyName(fc);
-						Serializable columnPropertyValue = null;
-
-						try {
-							Field columnField = entityClass.getDeclaredField(columnProperty);
-							columnField.setAccessible(true);
-							columnPropertyValue = (Serializable) columnField.get(entity);
-						} catch (Exception e) {
-							throw new OneToOneException("refProperty/refPropertyValue many to many id is not correct!");
-						}
-
-						
 						String inverseRefColumn = InverseJoinColumnUtil.getInverseRefColumn(fc);
 						List<Serializable> idList = null;
-						
+
 						Class<X> entityClassX = (Class<X>) fc.getJoinTable().entityClass();
 						Class<?> mapperXClass = fc.getJoinTableMapperClass();
-						
+
 						BaseMapper<X> mapperX = (BaseMapper<X>) getMapperBean(mapperXClass);
 						List<Object> xIds = mapperX.selectObjs((Wrapper<X>) new QueryWrapper<E>()
 								.select(inverseRefColumn).eq(refColumn, columnPropertyValue));
 						Serializable[] ids = xIds.toArray(new Serializable[] {});
 						idList = Arrays.asList(ids);
-						
+
 						Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 						Class<?> mapperClass = fc.getMapperClass();
 						BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
 						List<E> list = mapper.selectBatchIds(idList);
-						
 						fc.setFieldValueByList(list);
-						
+					} else {
+						final Serializable columnPropertyValueX = columnPropertyValue;
+						Enhancer enhancer = new Enhancer();
+						enhancer.setSuperclass(List.class);
+
+						// in FieldConditiono.setFieldValueByList() : set to list will call lazy load
+						// fail,so do like this!
+						if (fc.getFieldCollectionType() == FieldCollectionType.SET) {
+							@SuppressWarnings("static-access")
+							Set<E> set = (Set<E>) enhancer.create(Set.class, new LazyLoader() {
+								@Override
+								public Set<E> loadObject() throws Exception {
+									String inverseRefColumn = InverseJoinColumnUtil.getInverseRefColumn(fc);
+									List<Serializable> idList = null;
+
+									Class<X> entityClassX = (Class<X>) fc.getJoinTable().entityClass();
+									Class<?> mapperXClass = fc.getJoinTableMapperClass();
+
+									BaseMapper<X> mapperX = (BaseMapper<X>) getMapperBean(mapperXClass);
+									List<Object> xIds = mapperX.selectObjs((Wrapper<X>) new QueryWrapper<E>()
+											.select(inverseRefColumn).eq(refColumn, columnPropertyValueX));
+									Serializable[] ids = xIds.toArray(new Serializable[] {});
+									idList = Arrays.asList(ids);
+
+									Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
+									Class<?> mapperClass = fc.getMapperClass();
+									BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+									List<E> list = mapper.selectBatchIds(idList);
+
+									Set<E> set = null;
+									if (list != null) {
+										set = new HashSet<E>();
+										for (E e : list) {
+											set.add(e);
+										}
+									}
+
+									return set;
+
+								}
+
+							});
+
+							fc.setFieldValueBySet(set);
+						} else {
+							@SuppressWarnings("static-access")
+							List<E> list = (List<E>) enhancer.create(List.class, new LazyLoader() {
+								@Override
+								public List<E> loadObject() throws Exception {
+									String inverseRefColumn = InverseJoinColumnUtil.getInverseRefColumn(fc);
+									List<Serializable> idList = null;
+
+									Class<X> entityClassX = (Class<X>) fc.getJoinTable().entityClass();
+									Class<?> mapperXClass = fc.getJoinTableMapperClass();
+
+									BaseMapper<X> mapperX = (BaseMapper<X>) getMapperBean(mapperXClass);
+									List<Object> xIds = mapperX.selectObjs((Wrapper<X>) new QueryWrapper<E>()
+											.select(inverseRefColumn).eq(refColumn, columnPropertyValueX));
+									Serializable[] ids = xIds.toArray(new Serializable[] {});
+									idList = Arrays.asList(ids);
+
+									Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
+									Class<?> mapperClass = fc.getMapperClass();
+									BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+									List<E> proxyList = mapper.selectBatchIds(idList);
+
+									return proxyList;
+								}
+
+							});
+
+							fc.setFieldValueByList(list);
+						}
 					}
+
 				}
 
 			}
