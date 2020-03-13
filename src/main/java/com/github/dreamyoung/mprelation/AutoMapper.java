@@ -1,4 +1,4 @@
-package com.github.dreamyoung.mprelation;
+package main.java.com.github.dreamyoung.mprelation;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -10,13 +10,17 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
+/**
+ * AutoMapper for one2one/one2many/many2many
+ * @author dreamyoung
+ *
+ */
 public class AutoMapper extends AbstractAutoMapper {
 	@Autowired(required = false)
 	ApplicationContext applicationContext;
@@ -139,6 +143,12 @@ public class AutoMapper extends AbstractAutoMapper {
 		return (BaseMapper<M>) applicationContext.getBean(entityClass);
 	}
 
+	/**
+	 * an entity auto related
+	 * @param <T>
+	 * @param t
+	 * @return entity
+	 */
 	public <T> T mapperEntity(T t) {
 		if (t != null) {
 			t = super.manyToOne(t);
@@ -149,6 +159,13 @@ public class AutoMapper extends AbstractAutoMapper {
 		return t;
 	}
 
+	/**
+	 * an antity auto related eager or not
+	 * @param <T>
+	 * @param t
+	 * @param fetchEager
+	 * @return
+	 */
 	public <T> T mapperEntity(T t, boolean fetchEager) {
 		if (t != null) {
 			t = super.manyToOne(t, fetchEager);
@@ -159,6 +176,13 @@ public class AutoMapper extends AbstractAutoMapper {
 		return t;
 	}
 
+	/**
+	 * an entity auto related by one of property name
+	 * @param <T>
+	 * @param t
+	 * @param propertyName
+	 * @return
+	 */
 	public <T> T mapperEntity(T t, String propertyName) {
 		if (t != null) {
 			t = super.manyToOne(t, propertyName);
@@ -169,6 +193,12 @@ public class AutoMapper extends AbstractAutoMapper {
 		return t;
 	}
 
+	/**
+	 * an entity list auto related
+	 * @param <T>
+	 * @param list
+	 * @return
+	 */
 	public <T> List<T> mapperEntityList(List<T> list) {
 		if (list != null && list.size() > 0) {
 			for (int i = 0; i < list.size(); i++) {
@@ -183,6 +213,13 @@ public class AutoMapper extends AbstractAutoMapper {
 		return list;
 	}
 
+	/**
+	 * an entity list auto related eager or not
+	 * @param <T>
+	 * @param list
+	 * @param fetchEager
+	 * @return
+	 */
 	public <T> List<T> mapperEntityList(List<T> list, boolean fetchEager) {
 		if (list != null && list.size() > 0) {
 			for (int i = 0; i < list.size(); i++) {
@@ -197,6 +234,13 @@ public class AutoMapper extends AbstractAutoMapper {
 		return list;
 	}
 
+	/**
+	 * an entity list auto related by one of property name
+	 * @param <T>
+	 * @param list
+	 * @param propertyName
+	 * @return
+	 */
 	public <T> List<T> mapperEntityList(List<T> list, String propertyName) {
 		if (list != null && list.size() > 0) {
 			for (int i = 0; i < list.size(); i++) {
@@ -211,6 +255,12 @@ public class AutoMapper extends AbstractAutoMapper {
 		return list;
 	}
 
+	/**
+	 * an entity set auto related
+	 * @param <T>
+	 * @param set
+	 * @return
+	 */
 	public <T> Set<T> mapperEntitySet(Set<T> set) {
 		Iterator<T> iter = set.iterator();
 		while (iter.hasNext()) {
@@ -224,6 +274,13 @@ public class AutoMapper extends AbstractAutoMapper {
 		return set;
 	}
 
+	/**
+	 * an entity set auto related eager or not
+	 * @param <T>
+	 * @param set
+	 * @param fetchEager
+	 * @return
+	 */
 	public <T> Set<T> mapperEntitySet(Set<T> set, boolean fetchEager) {
 		Iterator<T> iter = set.iterator();
 		while (iter.hasNext()) {
@@ -237,6 +294,13 @@ public class AutoMapper extends AbstractAutoMapper {
 		return set;
 	}
 
+	/**
+	 * an entity set auto related by one of property name
+	 * @param <T>
+	 * @param set
+	 * @param propertyName
+	 * @return
+	 */
 	public <T> Set<T> mapperEntitySet(Set<T> set, String propertyName) {
 		Iterator<T> iter = set.iterator();
 		while (iter.hasNext()) {
@@ -250,6 +314,13 @@ public class AutoMapper extends AbstractAutoMapper {
 		return set;
 	}
 
+	/**
+	 * an entity page auto related
+	 * @param <E>
+	 * @param <T>
+	 * @param page
+	 * @return
+	 */
 	public <E extends IPage<T>, T> E mapperEntityPage(E page) {
 		List<T> list = page.getRecords();
 		ListIterator<T> iter = list.listIterator();
@@ -264,6 +335,14 @@ public class AutoMapper extends AbstractAutoMapper {
 		return page;
 	}
 
+	/**
+	 * an entity page auto related eager or not
+	 * @param <E>
+	 * @param <T>
+	 * @param page
+	 * @param fetchEager
+	 * @return
+	 */
 	public <E extends IPage<T>, T> E mapperEntityPage(E page, boolean fetchEager) {
 		List<T> list = page.getRecords();
 		ListIterator<T> iter = list.listIterator();
@@ -278,6 +357,14 @@ public class AutoMapper extends AbstractAutoMapper {
 		return page;
 	}
 
+	/**
+	 * an entity page auto related by one of property name
+	 * @param <E>
+	 * @param <T>
+	 * @param page
+	 * @param propertyName
+	 * @return
+	 */
 	public <E extends IPage<T>, T> E mapperEntityPage(E page, String propertyName) {
 		List<T> list = page.getRecords();
 		ListIterator<T> iter = list.listIterator();

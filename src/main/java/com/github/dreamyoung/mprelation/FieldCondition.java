@@ -1,4 +1,4 @@
-package com.github.dreamyoung.mprelation;
+package main.java.com.github.dreamyoung.mprelation;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;

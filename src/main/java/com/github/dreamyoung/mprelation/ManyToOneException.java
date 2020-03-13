@@ -1,4 +1,4 @@
-package com.github.dreamyoung.mprelation;
+package main.java.com.github.dreamyoung.mprelation;
 
 @SuppressWarnings("serial")
 public class ManyToOneException extends RuntimeException {

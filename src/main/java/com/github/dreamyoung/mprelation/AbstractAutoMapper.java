@@ -1,4 +1,4 @@
-package com.github.dreamyoung.mprelation;
+package main.java.com.github.dreamyoung.mprelation;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -10,22 +10,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.mybatis.logging.LoggerFactory;
+import org.apache.ibatis.logging.Log;
+import org.apache.ibatis.logging.LogFactory;
+import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.LazyLoader;
-import org.springframework.context.annotation.Scope;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import com.github.dreamyoung.mprelation.FieldCondition.FieldCollectionType;
 
-import org.apache.ibatis.logging.Log;
-import org.apache.ibatis.logging.LogFactory;
-import org.apache.ibatis.session.SqlSession;
+import main.java.com.github.dreamyoung.mprelation.FieldCondition.FieldCollectionType;
 
 @SuppressWarnings({ "unused", "unchecked" })
 public abstract class AbstractAutoMapper {
@@ -270,10 +267,14 @@ public abstract class AbstractAutoMapper {
 						E e = (E) mapper.selectOne(new QueryWrapper<E>().eq(refColumn, columnPropertyValue));
 						fc.setFieldValueByObject(e);
 					} else {
+						System.out.println("lazy............."+field.getName());
 						final Serializable columnPropertyValueX = columnPropertyValue;
 						E e = (E) Enhancer.create(fc.getFieldClass(), new LazyLoader() {
+							
 							@Override
 							public E loadObject() throws Exception {
+								System.out.println("lazy...DO..........");
+								
 								Class<?> mapperClass = fc.getMapperClass();
 								//BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
 								BaseMapper<E> mapper = (BaseMapper<E>)factory.getObject().getMapper(mapperClass);

@@ -1,4 +1,4 @@
-package com.github.dreamyoung.mprelation;
+package main.java.com.github.dreamyoung.mprelation;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
 public interface IService<T> extends com.baomidou.mybatisplus.extension.service.IService<T> {
-
 	default T getById(Serializable id) {
 		return getAutoMapper().mapperEntity(getBaseMapper().selectById(id));
 	}

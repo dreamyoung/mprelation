@@ -1,4 +1,4 @@
-package com.github.dreamyoung.mprelation;
+package main.java.com.github.dreamyoung.mprelation;
 
 public class InverseJoinColumnUtil {
 	public static <T> String getInverseRefColumn(FieldCondition<T> fc) {
