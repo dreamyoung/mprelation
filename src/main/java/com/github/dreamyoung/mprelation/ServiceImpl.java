@@ -1,4 +1,4 @@
-package main.java.com.github.dreamyoung.mprelation;
+package com.github.dreamyoung.mprelation;
 
 import org.springframework.beans.factory.annotation.Autowired;
 

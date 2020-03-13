@@ -1,4 +1,4 @@
-package main.java.com.github.dreamyoung.mprelation;
+package com.github.dreamyoung.mprelation;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -21,8 +21,7 @@ import org.springframework.cglib.proxy.LazyLoader;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-
-import main.java.com.github.dreamyoung.mprelation.FieldCondition.FieldCollectionType;
+import com.github.dreamyoung.mprelation.FieldCondition.FieldCollectionType;
 
 @SuppressWarnings({ "unused", "unchecked" })
 public abstract class AbstractAutoMapper {

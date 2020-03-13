@@ -1,4 +1,4 @@
-package main.java.com.github.dreamyoung.mprelation;
+package com.github.dreamyoung.mprelation;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -164,7 +164,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @param <T>
 	 * @param t
 	 * @param fetchEager
-	 * @return
+	 * @return entity
 	 */
 	public <T> T mapperEntity(T t, boolean fetchEager) {
 		if (t != null) {
@@ -181,7 +181,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @param <T>
 	 * @param t
 	 * @param propertyName
-	 * @return
+	 * @return entity
 	 */
 	public <T> T mapperEntity(T t, String propertyName) {
 		if (t != null) {
@@ -197,7 +197,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * an entity list auto related
 	 * @param <T>
 	 * @param list
-	 * @return
+	 * @return entity list
 	 */
 	public <T> List<T> mapperEntityList(List<T> list) {
 		if (list != null && list.size() > 0) {
@@ -218,7 +218,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @param <T>
 	 * @param list
 	 * @param fetchEager
-	 * @return
+	 * @return entity list
 	 */
 	public <T> List<T> mapperEntityList(List<T> list, boolean fetchEager) {
 		if (list != null && list.size() > 0) {
@@ -239,7 +239,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @param <T>
 	 * @param list
 	 * @param propertyName
-	 * @return
+	 * @return entity list
 	 */
 	public <T> List<T> mapperEntityList(List<T> list, String propertyName) {
 		if (list != null && list.size() > 0) {
@@ -259,7 +259,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * an entity set auto related
 	 * @param <T>
 	 * @param set
-	 * @return
+	 * @return entity set
 	 */
 	public <T> Set<T> mapperEntitySet(Set<T> set) {
 		Iterator<T> iter = set.iterator();
@@ -279,7 +279,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @param <T>
 	 * @param set
 	 * @param fetchEager
-	 * @return
+	 * @return entity set
 	 */
 	public <T> Set<T> mapperEntitySet(Set<T> set, boolean fetchEager) {
 		Iterator<T> iter = set.iterator();
@@ -299,7 +299,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @param <T>
 	 * @param set
 	 * @param propertyName
-	 * @return
+	 * @return entity set
 	 */
 	public <T> Set<T> mapperEntitySet(Set<T> set, String propertyName) {
 		Iterator<T> iter = set.iterator();
@@ -319,7 +319,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @param <E>
 	 * @param <T>
 	 * @param page
-	 * @return
+	 * @return entity page
 	 */
 	public <E extends IPage<T>, T> E mapperEntityPage(E page) {
 		List<T> list = page.getRecords();
@@ -341,7 +341,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @param <T>
 	 * @param page
 	 * @param fetchEager
-	 * @return
+	 * @return entity page
 	 */
 	public <E extends IPage<T>, T> E mapperEntityPage(E page, boolean fetchEager) {
 		List<T> list = page.getRecords();
@@ -363,7 +363,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @param <T>
 	 * @param page
 	 * @param propertyName
-	 * @return
+	 * @return entity page
 	 */
 	public <E extends IPage<T>, T> E mapperEntityPage(E page, String propertyName) {
 		List<T> list = page.getRecords();

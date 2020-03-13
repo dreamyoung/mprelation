@@ -1,4 +1,4 @@
-package main.java.com.github.dreamyoung.mprelation;
+package com.github.dreamyoung.mprelation;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;

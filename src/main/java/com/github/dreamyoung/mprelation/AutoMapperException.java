@@ -1,4 +1,4 @@
-package main.java.com.github.dreamyoung.mprelation;
+package com.github.dreamyoung.mprelation;
 
 @SuppressWarnings("serial")
 public class AutoMapperException extends RuntimeException {
