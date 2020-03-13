@@ -1,5 +1,6 @@
 package com.github.dreamyoung.mprelation;
 
+import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
@@ -11,10 +12,12 @@ public class ServiceImpl<M extends BaseMapper<T>, T>
 	@Autowired(required = false)
 	AutoMapper autoMapper;
 
+	
 	@Override
 	public AutoMapper getAutoMapper() {
 		return this.autoMapper;
 	}
+	
 
 	@Override
 	public T getOne(Wrapper<T> queryWrapper, boolean throwEx) {

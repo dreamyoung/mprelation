@@ -10,6 +10,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
@@ -19,7 +20,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 public class AutoMapper extends AbstractAutoMapper {
 	@Autowired(required = false)
 	ApplicationContext applicationContext;
-
+	
 	private String[] entityPackages;
 
 	public AutoMapper() {

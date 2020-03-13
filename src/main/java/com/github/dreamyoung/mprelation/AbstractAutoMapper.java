@@ -11,8 +11,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.mybatis.logging.LoggerFactory;
+import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.LazyLoader;
+import org.springframework.context.annotation.Scope;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -22,9 +25,13 @@ import com.github.dreamyoung.mprelation.FieldCondition.FieldCollectionType;
 
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
+import org.apache.ibatis.session.SqlSession;
 
 @SuppressWarnings({ "unused", "unchecked" })
 public abstract class AbstractAutoMapper {
+	//@Autowired SqlSession sqlSession;
+	@Autowired ObjectFactory<SqlSession> factory;
+	
 	protected Log log = LogFactory.getLog(getClass());
 
 	public abstract <M> BaseMapper<M> getMapperBean(Class<M> entityClass);
@@ -112,7 +119,9 @@ public abstract class AbstractAutoMapper {
 					if (!lazy) {
 						// Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 						Class<?> mapperClass = fc.getMapperClass();
-						BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+						//BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+						BaseMapper<E> mapper = (BaseMapper<E>)factory.getObject().getMapper(mapperClass);
+						
 						List<E> list = mapper.selectList(new QueryWrapper<E>().eq(refColumn, columnPropertyValue));
 						fc.setFieldValueByList(list);
 					} else {
@@ -127,7 +136,8 @@ public abstract class AbstractAutoMapper {
 								public Set<E> loadObject() throws Exception {
 									// Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 									Class<?> mapperClass = fc.getMapperClass();
-									BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+									//BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+									BaseMapper<E> mapper = (BaseMapper<E>)factory.getObject().getMapper(mapperClass);
 									List<E> list = mapper
 											.selectList(new QueryWrapper<E>().eq(refColumn, columnPropertyValueX));
 
@@ -151,7 +161,8 @@ public abstract class AbstractAutoMapper {
 								public List<E> loadObject() throws Exception {
 									// Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 									Class<?> mapperClass = fc.getMapperClass();
-									BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+									//BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+									BaseMapper<E> mapper = (BaseMapper<E>)factory.getObject().getMapper(mapperClass);
 									List<E> list = mapper
 											.selectList(new QueryWrapper<E>().eq(refColumn, columnPropertyValueX));
 									return list;
@@ -254,7 +265,8 @@ public abstract class AbstractAutoMapper {
 					if (!lazy) {
 						// Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 						Class<?> mapperClass = fc.getMapperClass();
-						BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+						//BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+						BaseMapper<E> mapper = (BaseMapper<E>)factory.getObject().getMapper(mapperClass);
 						E e = (E) mapper.selectOne(new QueryWrapper<E>().eq(refColumn, columnPropertyValue));
 						fc.setFieldValueByObject(e);
 					} else {
@@ -263,7 +275,8 @@ public abstract class AbstractAutoMapper {
 							@Override
 							public E loadObject() throws Exception {
 								Class<?> mapperClass = fc.getMapperClass();
-								BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+								//BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+								BaseMapper<E> mapper = (BaseMapper<E>)factory.getObject().getMapper(mapperClass);
 								E e = (E) mapper.selectOne(new QueryWrapper<E>().eq(refColumn, columnPropertyValueX));
 								return e;
 							}
@@ -365,7 +378,8 @@ public abstract class AbstractAutoMapper {
 					if (!lazy) {
 						// Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 						Class<?> mapperClass = fc.getMapperClass();
-						BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+						//BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+						BaseMapper<E> mapper = (BaseMapper<E>)factory.getObject().getMapper(mapperClass);
 						E e = (E) mapper.selectOne(new QueryWrapper<E>().eq(refColumn, columnPropertyValue));
 						fc.setFieldValueByObject(e);
 					} else {
@@ -374,7 +388,8 @@ public abstract class AbstractAutoMapper {
 							@Override
 							public E loadObject() throws Exception {
 								Class<?> mapperClass = fc.getMapperClass();
-								BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+								//BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+								BaseMapper<E> mapper = (BaseMapper<E>)factory.getObject().getMapper(mapperClass);
 								E e = (E) mapper.selectOne(new QueryWrapper<E>().eq(refColumn, columnPropertyValueX));
 								return e;
 							}
@@ -480,7 +495,8 @@ public abstract class AbstractAutoMapper {
 						Class<X> entityClassX = (Class<X>) fc.getJoinTable().entityClass();
 						Class<?> mapperXClass = fc.getJoinTableMapperClass();
 
-						BaseMapper<X> mapperX = (BaseMapper<X>) getMapperBean(mapperXClass);
+						//BaseMapper<X> mapperX = (BaseMapper<X>) getMapperBean(mapperXClass);
+						BaseMapper<X> mapperX = (BaseMapper<X>)factory.getObject().getMapper(mapperXClass);
 						List<Object> xIds = mapperX.selectObjs((Wrapper<X>) new QueryWrapper<E>()
 								.select(inverseRefColumn).eq(refColumn, columnPropertyValue));
 						Serializable[] ids = xIds.toArray(new Serializable[] {});
@@ -488,7 +504,8 @@ public abstract class AbstractAutoMapper {
 
 						Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 						Class<?> mapperClass = fc.getMapperClass();
-						BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+						//BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+						BaseMapper<E> mapper = (BaseMapper<E>)factory.getObject().getMapper(mapperClass);
 						List<E> list = mapper.selectBatchIds(idList);
 						fc.setFieldValueByList(list);
 					} else {
@@ -509,7 +526,8 @@ public abstract class AbstractAutoMapper {
 									Class<X> entityClassX = (Class<X>) fc.getJoinTable().entityClass();
 									Class<?> mapperXClass = fc.getJoinTableMapperClass();
 
-									BaseMapper<X> mapperX = (BaseMapper<X>) getMapperBean(mapperXClass);
+									//BaseMapper<X> mapperX = (BaseMapper<X>) getMapperBean(mapperXClass);
+									BaseMapper<X> mapperX = (BaseMapper<X>)factory.getObject().getMapper(mapperXClass);
 									List<Object> xIds = mapperX.selectObjs((Wrapper<X>) new QueryWrapper<E>()
 											.select(inverseRefColumn).eq(refColumn, columnPropertyValueX));
 									Serializable[] ids = xIds.toArray(new Serializable[] {});
@@ -517,7 +535,8 @@ public abstract class AbstractAutoMapper {
 
 									Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 									Class<?> mapperClass = fc.getMapperClass();
-									BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+									//BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+									BaseMapper<E> mapper = (BaseMapper<E>)factory.getObject().getMapper(mapperClass);
 									List<E> list = mapper.selectBatchIds(idList);
 
 									Set<E> set = null;
@@ -546,7 +565,8 @@ public abstract class AbstractAutoMapper {
 									Class<X> entityClassX = (Class<X>) fc.getJoinTable().entityClass();
 									Class<?> mapperXClass = fc.getJoinTableMapperClass();
 
-									BaseMapper<X> mapperX = (BaseMapper<X>) getMapperBean(mapperXClass);
+									//BaseMapper<X> mapperX = (BaseMapper<X>) getMapperBean(mapperXClass);
+									BaseMapper<X> mapperX = (BaseMapper<X>)factory.getObject().getMapper(mapperXClass);
 									List<Object> xIds = mapperX.selectObjs((Wrapper<X>) new QueryWrapper<E>()
 											.select(inverseRefColumn).eq(refColumn, columnPropertyValueX));
 									Serializable[] ids = xIds.toArray(new Serializable[] {});
@@ -554,7 +574,8 @@ public abstract class AbstractAutoMapper {
 
 									Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 									Class<?> mapperClass = fc.getMapperClass();
-									BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+									//BaseMapper<E> mapper = (BaseMapper<E>) getMapperBean(mapperClass);
+									BaseMapper<E> mapper = (BaseMapper<E>)factory.getObject().getMapper(mapperClass);
 									List<E> proxyList = mapper.selectBatchIds(idList);
 
 									return proxyList;
