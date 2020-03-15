@@ -10,29 +10,54 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 
 public interface IService<T> extends com.baomidou.mybatisplus.extension.service.IService<T> {
 	default T getById(Serializable id) {
-		return getAutoMapper().mapperEntity(getBaseMapper().selectById(id));
+		if (isAutoMapperEnabled()) {
+			return getAutoMapper().mapperEntity(getBaseMapper().selectById(id));
+		} else {
+			return getBaseMapper().selectById(id);
+		}
 	}
 
 	default List<T> listByIds(Collection<? extends Serializable> idList) {
-		return getAutoMapper().mapperEntityList(getBaseMapper().selectBatchIds(idList));
+		if (isAutoMapperEnabled()) {
+			return getAutoMapper().mapperEntityList(getBaseMapper().selectBatchIds(idList));
+		} else {
+			return getBaseMapper().selectBatchIds(idList);
+		}
 	}
 
 	default List<T> listByMap(Map<String, Object> columnMap) {
-		return getAutoMapper()
-				.mapperEntityList(getAutoMapper().mapperEntityList(getBaseMapper().selectByMap(columnMap)));
+		if (isAutoMapperEnabled()) {
+			return getAutoMapper().mapperEntityList(getBaseMapper().selectByMap(columnMap));
+		} else {
+			return getBaseMapper().selectByMap(columnMap);
+		}
 	}
 
 	default T getOne(Wrapper<T> queryWrapper) {
-		return getAutoMapper().mapperEntity(getOne(queryWrapper, true));
+		if (isAutoMapperEnabled()) {
+			return getAutoMapper().mapperEntity(getOne(queryWrapper, true));
+		} else {
+			return getOne(queryWrapper, true);
+		}
 	}
 
 	default List<T> list(Wrapper<T> queryWrapper) {
-		return getAutoMapper().mapperEntityList(getBaseMapper().selectList(queryWrapper));
+		if (isAutoMapperEnabled()) {
+			return getAutoMapper().mapperEntityList(getBaseMapper().selectList(queryWrapper));
+		} else {
+			return getBaseMapper().selectList(queryWrapper);
+		}
 	}
 
 	default <E extends IPage<T>> E page(E page, Wrapper<T> queryWrapper) {
-		return getAutoMapper().mapperEntityPage(getBaseMapper().selectPage(page, queryWrapper));
+		if (isAutoMapperEnabled()) {
+			return getAutoMapper().mapperEntityPage(getBaseMapper().selectPage(page, queryWrapper));
+		} else {
+			return getBaseMapper().selectPage(page, queryWrapper);
+		}
 	}
 
 	AutoMapper getAutoMapper();
+
+	boolean isAutoMapperEnabled();
 }

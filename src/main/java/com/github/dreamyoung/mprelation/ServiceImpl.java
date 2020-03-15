@@ -11,18 +11,43 @@ public class ServiceImpl<M extends BaseMapper<T>, T>
 	@Autowired(required = false)
 	AutoMapper autoMapper;
 
-	
+	private boolean autoMapperEnabled = true;
+
+	public ServiceImpl() {
+		Class<?> clazz = this.getClass();
+		if (clazz.getAnnotation(DisableAutoMapper.class) != null
+				&& clazz.getAnnotation(DisableAutoMapper.class).value() == true) {
+			autoMapperEnabled = false;
+		}
+	}
+
 	@Override
 	public AutoMapper getAutoMapper() {
+
 		return this.autoMapper;
 	}
-	
 
 	@Override
 	public T getOne(Wrapper<T> queryWrapper, boolean throwEx) {
-		if (throwEx) {
-			return autoMapper.mapperEntity(baseMapper.selectOne(queryWrapper));
+		if (isAutoMapperEnabled()) {
+			if (throwEx) {
+				return autoMapper.mapperEntity(baseMapper.selectOne(queryWrapper));
+			}
+			return autoMapper.mapperEntity(SqlHelper.getObject(log, baseMapper.selectList(queryWrapper)));
+		} else {
+			if (throwEx) {
+				return baseMapper.selectOne(queryWrapper);
+			}
+			return SqlHelper.getObject(log, baseMapper.selectList(queryWrapper));
 		}
-		return autoMapper.mapperEntity(SqlHelper.getObject(log, baseMapper.selectList(queryWrapper)));
+	}
+
+	@Override
+	public boolean isAutoMapperEnabled() {
+		return autoMapperEnabled;
+	}
+
+	public void setAutoMapperEnabled(boolean autoMapperEnabled) {
+		this.autoMapperEnabled = autoMapperEnabled;
 	}
 }

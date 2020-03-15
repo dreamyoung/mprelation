@@ -147,7 +147,6 @@ public class FieldCondition<T> {
 				}
 			}
 		}
-
 	}
 
 	public Field getField() {

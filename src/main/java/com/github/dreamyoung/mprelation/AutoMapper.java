@@ -18,13 +18,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 
 /**
  * AutoMapper for one2one/one2many/many2many
+ * 
  * @author dreamyoung
  *
  */
 public class AutoMapper extends AbstractAutoMapper {
 	@Autowired(required = false)
 	ApplicationContext applicationContext;
-	
+
 	private String[] entityPackages;
 
 	public AutoMapper() {
@@ -145,6 +146,7 @@ public class AutoMapper extends AbstractAutoMapper {
 
 	/**
 	 * an entity auto related
+	 * 
 	 * @param <T>
 	 * @param t
 	 * @return entity
@@ -161,6 +163,7 @@ public class AutoMapper extends AbstractAutoMapper {
 
 	/**
 	 * an antity auto related eager or not
+	 * 
 	 * @param <T>
 	 * @param t
 	 * @param fetchEager
@@ -178,6 +181,7 @@ public class AutoMapper extends AbstractAutoMapper {
 
 	/**
 	 * an entity auto related by one of property name
+	 * 
 	 * @param <T>
 	 * @param t
 	 * @param propertyName
@@ -195,6 +199,7 @@ public class AutoMapper extends AbstractAutoMapper {
 
 	/**
 	 * an entity list auto related
+	 * 
 	 * @param <T>
 	 * @param list
 	 * @return entity list
@@ -215,6 +220,7 @@ public class AutoMapper extends AbstractAutoMapper {
 
 	/**
 	 * an entity list auto related eager or not
+	 * 
 	 * @param <T>
 	 * @param list
 	 * @param fetchEager
@@ -236,6 +242,7 @@ public class AutoMapper extends AbstractAutoMapper {
 
 	/**
 	 * an entity list auto related by one of property name
+	 * 
 	 * @param <T>
 	 * @param list
 	 * @param propertyName
@@ -257,6 +264,7 @@ public class AutoMapper extends AbstractAutoMapper {
 
 	/**
 	 * an entity set auto related
+	 * 
 	 * @param <T>
 	 * @param set
 	 * @return entity set
@@ -276,6 +284,7 @@ public class AutoMapper extends AbstractAutoMapper {
 
 	/**
 	 * an entity set auto related eager or not
+	 * 
 	 * @param <T>
 	 * @param set
 	 * @param fetchEager
@@ -296,6 +305,7 @@ public class AutoMapper extends AbstractAutoMapper {
 
 	/**
 	 * an entity set auto related by one of property name
+	 * 
 	 * @param <T>
 	 * @param set
 	 * @param propertyName
@@ -316,6 +326,7 @@ public class AutoMapper extends AbstractAutoMapper {
 
 	/**
 	 * an entity page auto related
+	 * 
 	 * @param <E>
 	 * @param <T>
 	 * @param page
@@ -337,6 +348,7 @@ public class AutoMapper extends AbstractAutoMapper {
 
 	/**
 	 * an entity page auto related eager or not
+	 * 
 	 * @param <E>
 	 * @param <T>
 	 * @param page
@@ -359,6 +371,7 @@ public class AutoMapper extends AbstractAutoMapper {
 
 	/**
 	 * an entity page auto related by one of property name
+	 * 
 	 * @param <E>
 	 * @param <T>
 	 * @param page

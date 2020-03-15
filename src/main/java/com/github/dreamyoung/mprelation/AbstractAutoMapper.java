@@ -266,7 +266,6 @@ public abstract class AbstractAutoMapper {
 						E e = (E) mapper.selectOne(new QueryWrapper<E>().eq(refColumn, columnPropertyValue));
 						fc.setFieldValueByObject(e);
 					} else {
-						System.out.println("lazy............."+field.getName());
 						final Serializable columnPropertyValueX = columnPropertyValue;
 						E e = (E) Enhancer.create(fc.getFieldClass(), new LazyLoader() {
 							
