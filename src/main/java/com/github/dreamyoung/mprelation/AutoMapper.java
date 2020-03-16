@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -194,6 +195,64 @@ public class AutoMapper extends AbstractAutoMapper {
 			t = super.manyToMany(t, propertyName);
 		}
 		return t;
+	}
+
+	/**
+	 * an entity list auto related
+	 * 
+	 * @param <T>
+	 * @param list
+	 * @return entity list
+	 */
+	public <T> Collection<T> mapperEntityCollection(Collection<T> list) {
+		if (list != null && list.size() > 0) {
+			if (list.getClass() == List.class || list.getClass() == ArrayList.class) {
+				list = mapperEntityList((List<T>) list);
+			} else {
+				list = mapperEntitySet((Set<T>) list);
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * an entity list auto related eager or not
+	 * 
+	 * @param <T>
+	 * @param list
+	 * @param fetchEager
+	 * @return entity list
+	 */
+	public <T> Collection<T> mapperEntityCollection(Collection<T> list, boolean fetchEager) {
+		if (list != null && list.size() > 0) {
+			if (list.getClass() == List.class || list.getClass() == ArrayList.class) {
+				list = mapperEntityList((List<T>) list, fetchEager);
+			} else {
+				list = mapperEntitySet((Set<T>) list, fetchEager);
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * an entity list auto related by one of property name
+	 * 
+	 * @param <T>
+	 * @param list
+	 * @param propertyName
+	 * @return entity list
+	 */
+	public <T> Collection<T> mapperEntityCollection(Collection<T> list, String propertyName) {
+		if (list != null && list.size() > 0) {
+			if (list.getClass() == List.class || list.getClass() == ArrayList.class) {
+				list = mapperEntityList((List<T>) list, propertyName);
+			} else {
+				list = mapperEntitySet((Set<T>) list, propertyName);
+			}
+		}
+		return list;
 	}
 
 	/**
