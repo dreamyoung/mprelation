@@ -48,4 +48,24 @@ public class InverseJoinColumnUtil {
 
 		return inverseColumn;
 	}
+
+	public static <T> String getInverseColumnProperty(FieldCondition<T> fc) {
+		InverseJoinColumn inverseJoinColumn = fc.getInverseJoinColumn();
+		String inverseColumnProperty = null;
+
+		if (inverseJoinColumn != null && !inverseJoinColumn.property().equals("")) {
+			inverseColumnProperty = inverseJoinColumn.property();
+		} else {
+			if (fc.getIsCollection()) {
+				if (fc.getInverseTableId() != null) {
+					inverseColumnProperty = fc.getFieldOfInverseTableId().getName();
+				} else {
+					inverseColumnProperty = getInverseColumn(fc);
+				}
+			} else {
+				inverseColumnProperty = fc.getFieldOfInverseTableId().getName();
+			}
+		}
+		return inverseColumnProperty;
+	}
 }

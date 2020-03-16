@@ -70,21 +70,86 @@ public class JoinColumnUtil {
 
 	public static <T> String getColumnPropertyName(FieldCondition<T> fc) {
 		JoinColumn joinColumn = fc.getJoinColumn();
-		String refProperty = null;
+		String columnProperty = null;
 
 		if (joinColumn != null && !joinColumn.property().equals("")) {
-			refProperty = joinColumn.property();
+			columnProperty = joinColumn.property();
 		} else {
 			if (fc.getIsCollection()) {
 				if (fc.getTableId() != null) {
-					refProperty = fc.getFieldOfTableId().getName();
+					columnProperty = fc.getFieldOfTableId().getName();
 				} else {
-					refProperty = getColumn(fc);
+					columnProperty = getColumn(fc);
 				}
 			} else {
-				refProperty = getColumn(fc);
+				columnProperty = getColumn(fc);
 			}
 		}
-		return refProperty;
+		return columnProperty;
+	}
+
+	public static <T> String getRefColumnProperty(FieldCondition<T> fc) {
+		JoinColumn joinColumn = fc.getJoinColumn();
+		String refColumnProperty = null;
+
+		if (joinColumn != null && !joinColumn.referencedColumnName().equals("")) {
+			refColumnProperty = joinColumn.referencedColumnName();
+			if (refColumnProperty.indexOf("_") != -1) {
+				String[] columnNameArr = refColumnProperty.split("_");
+				refColumnProperty = "";
+				for (int k = 0; k < columnNameArr.length; k++) {
+					if (k == 0) {
+						refColumnProperty += columnNameArr[k];
+					} else {
+						refColumnProperty += columnNameArr[k].substring(0, 1).toUpperCase()
+								+ columnNameArr[k].substring(1);
+					}
+				}
+			}
+		} else {
+			if (fc.getIsCollection()) {
+				if (fc.getTableId() != null) {
+					refColumnProperty = fc.getFieldOfTableId().getName();
+				} else {
+					refColumnProperty = getColumn(fc);
+				}
+			} else {
+				refColumnProperty = getColumn(fc);
+			}
+		}
+		return refColumnProperty;
+	}
+	
+	
+	public static <T>  String getInverseRefColumnProperty(FieldCondition<T> fc) {
+		InverseJoinColumn inverseJoinColumn = fc.getInverseJoinColumn();
+		String inverseRefColumnProperty = null;
+
+		if (inverseJoinColumn != null && !inverseJoinColumn.referencedColumnName().equals("")) {
+			inverseRefColumnProperty = inverseJoinColumn.referencedColumnName();
+			if (inverseRefColumnProperty.indexOf("_") != -1) {
+				String[] columnNameArr = inverseRefColumnProperty.split("_");
+				inverseRefColumnProperty = "";
+				for (int k = 0; k < columnNameArr.length; k++) {
+					if (k == 0) {
+						inverseRefColumnProperty += columnNameArr[k];
+					} else {
+						inverseRefColumnProperty += columnNameArr[k].substring(0, 1).toUpperCase()
+								+ columnNameArr[k].substring(1);
+					}
+				}
+			}
+		} else {
+			if (fc.getIsCollection()) {
+				if (fc.getTableId() != null) {
+					inverseRefColumnProperty = fc.getFieldOfTableId().getName();
+				} else {
+					inverseRefColumnProperty = getColumn(fc);
+				}
+			} else {
+				inverseRefColumnProperty = getColumn(fc);
+			}
+		}
+		return inverseRefColumnProperty;
 	}
 }

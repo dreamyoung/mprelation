@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -206,13 +205,10 @@ public class AutoMapper extends AbstractAutoMapper {
 	 */
 	public <T> List<T> mapperEntityList(List<T> list) {
 		if (list != null && list.size() > 0) {
-			for (int i = 0; i < list.size(); i++) {
-				T t = list.get(i);
-				t = super.manyToOne(t);
-				t = super.oneToMany(t);
-				t = super.oneToOne(t);
-				t = super.manyToMany(t);
-			}
+			list = super.manyToOne(list, null, false);
+			list = super.oneToMany(list, null, false);
+			list = super.oneToOne(list, null, false);
+			list = super.manyToMany(list, null, false);
 		}
 
 		return list;
@@ -228,13 +224,10 @@ public class AutoMapper extends AbstractAutoMapper {
 	 */
 	public <T> List<T> mapperEntityList(List<T> list, boolean fetchEager) {
 		if (list != null && list.size() > 0) {
-			for (int i = 0; i < list.size(); i++) {
-				T t = list.get(i);
-				t = super.manyToOne(t, fetchEager);
-				t = super.oneToMany(t, fetchEager);
-				t = super.oneToOne(t, fetchEager);
-				t = super.manyToMany(t, fetchEager);
-			}
+			list = super.manyToOne(list, null, true);
+			list = super.oneToMany(list, null, true);
+			list = super.oneToOne(list, null, true);
+			list = super.manyToMany(list, null, true);
 		}
 
 		return list;
@@ -250,13 +243,10 @@ public class AutoMapper extends AbstractAutoMapper {
 	 */
 	public <T> List<T> mapperEntityList(List<T> list, String propertyName) {
 		if (list != null && list.size() > 0) {
-			for (int i = 0; i < list.size(); i++) {
-				T t = list.get(i);
-				t = super.manyToOne(t, propertyName);
-				t = super.oneToMany(t, propertyName);
-				t = super.oneToOne(t, propertyName);
-				t = super.manyToMany(t, propertyName);
-			}
+			list = super.manyToOne(list, propertyName, true);
+			list = super.oneToMany(list, propertyName, true);
+			list = super.oneToOne(list, propertyName, true);
+			list = super.manyToMany(list, propertyName, true);
 		}
 
 		return list;
@@ -270,15 +260,16 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @return entity set
 	 */
 	public <T> Set<T> mapperEntitySet(Set<T> set) {
-		Iterator<T> iter = set.iterator();
-		while (iter.hasNext()) {
-			T t = iter.next();
-			t = super.manyToOne(t);
-			t = super.oneToMany(t);
-			t = super.oneToOne(t);
-			t = super.manyToMany(t);
-		}
+		if (set != null && set.size() > 0) {
+			Iterator<T> iter = set.iterator();
+			List<T> list = new ArrayList<T>();
+			while (iter.hasNext()) {
+				T t = iter.next();
+				list.add(t);
+			}
 
+			mapperEntityList(list);
+		}
 		return set;
 	}
 
@@ -291,15 +282,16 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @return entity set
 	 */
 	public <T> Set<T> mapperEntitySet(Set<T> set, boolean fetchEager) {
-		Iterator<T> iter = set.iterator();
-		while (iter.hasNext()) {
-			T t = iter.next();
-			t = super.manyToOne(t, fetchEager);
-			t = super.oneToMany(t, fetchEager);
-			t = super.oneToOne(t, fetchEager);
-			t = super.manyToMany(t, fetchEager);
-		}
+		if (set != null && set.size() > 0) {
+			Iterator<T> iter = set.iterator();
+			List<T> list = new ArrayList<T>();
+			while (iter.hasNext()) {
+				T t = iter.next();
+				list.add(t);
+			}
 
+			mapperEntityList(list, true);
+		}
 		return set;
 	}
 
@@ -312,15 +304,16 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @return entity set
 	 */
 	public <T> Set<T> mapperEntitySet(Set<T> set, String propertyName) {
-		Iterator<T> iter = set.iterator();
-		while (iter.hasNext()) {
-			T t = iter.next();
-			t = super.manyToOne(t, propertyName);
-			t = super.oneToMany(t, propertyName);
-			t = super.oneToOne(t, propertyName);
-			t = super.manyToMany(t, propertyName);
-		}
+		if (set != null && set.size() > 0) {
+			Iterator<T> iter = set.iterator();
+			List<T> list = new ArrayList<T>();
+			while (iter.hasNext()) {
+				T t = iter.next();
+				list.add(t);
+			}
 
+			mapperEntityList(list, propertyName);
+		}
 		return set;
 	}
 
@@ -334,14 +327,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 */
 	public <E extends IPage<T>, T> E mapperEntityPage(E page) {
 		List<T> list = page.getRecords();
-		ListIterator<T> iter = list.listIterator();
-		while (iter.hasNext()) {
-			T t = iter.next();
-			t = super.manyToOne(t);
-			t = super.oneToMany(t);
-			t = super.oneToOne(t);
-			t = super.manyToMany(t);
-		}
+		list = mapperEntityList(list);
 
 		return page;
 	}
@@ -357,14 +343,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 */
 	public <E extends IPage<T>, T> E mapperEntityPage(E page, boolean fetchEager) {
 		List<T> list = page.getRecords();
-		ListIterator<T> iter = list.listIterator();
-		while (iter.hasNext()) {
-			T t = iter.next();
-			t = super.manyToOne(t, fetchEager);
-			t = super.oneToMany(t, fetchEager);
-			t = super.oneToOne(t, fetchEager);
-			t = super.manyToMany(t, fetchEager);
-		}
+		list = mapperEntityList(list, true);
 
 		return page;
 	}
@@ -380,14 +359,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 */
 	public <E extends IPage<T>, T> E mapperEntityPage(E page, String propertyName) {
 		List<T> list = page.getRecords();
-		ListIterator<T> iter = list.listIterator();
-		while (iter.hasNext()) {
-			T t = iter.next();
-			t = super.manyToOne(t, propertyName);
-			t = super.oneToMany(t, propertyName);
-			t = super.oneToOne(t, propertyName);
-			t = super.manyToMany(t, propertyName);
-		}
+		list = mapperEntityList(list, propertyName);
 
 		return page;
 	}

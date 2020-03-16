@@ -17,21 +17,33 @@ public class FieldCondition<T> {
 	};
 
 	private T entity;
-
 	private Field field;
+	private Boolean fetchEager;
+
 	private String name;
 	private Boolean isCollection;
 	private FieldCollectionType fieldCollectionType;
+	private RelationType relationType;
 	private Class<?> fieldClass;
 	private Boolean isLazy;
 
 	private TableId tableId;
 	private Field fieldOfTableId;
 	private TableField tableField;
+
+	private TableId refTableId;
+	private Field fieldOfRefTableId;
+	private TableField refTableField;
+
+	private TableId inverseTableId;
+	private Field fieldOfInverseTableId;
+	private TableField inverseTableField;
+
 	private OneToMany oneToMany;
 	private OneToOne oneToOne;
 	private ManyToOne manyToOne;
 	private ManyToMany manyToMany;
+	private FetchType fetchType;
 	private Lazy lazy;
 	private JoinColumn joinColumn;
 	private JoinColumns joinColumns;
@@ -41,10 +53,11 @@ public class FieldCondition<T> {
 	private Class<?> mapperClass;
 	private Class<?> joinTableMapperClass;
 
-	public FieldCondition(T entity, Field field) {
+	public FieldCondition(T entity, Field field, boolean fetchEager) {
 		this.entity = entity;
 		this.field = field;
 		this.field.setAccessible(true);
+		this.fetchEager = fetchEager;
 
 		this.name = field.getName();
 		this.isCollection = field.getType() == List.class || field.getType() == ArrayList.class
@@ -71,18 +84,53 @@ public class FieldCondition<T> {
 		this.oneToOne = field.getAnnotation(OneToOne.class);
 		this.manyToOne = field.getAnnotation(ManyToOne.class);
 		this.manyToMany = field.getAnnotation(ManyToMany.class);
+		if (oneToMany != null) {
+			this.relationType = RelationType.ONETOMANY;
+			this.fetchType = oneToMany.fetch();
+		} else if (oneToOne != null) {
+			this.relationType = RelationType.ONETOONE;
+			this.fetchType = oneToOne.fetch();
+		} else if (manyToOne != null) {
+			this.relationType = RelationType.MANYTOONE;
+			this.fetchType = manyToOne.fetch();
+		} else if (manyToMany != null) {
+			this.relationType = RelationType.MANYTOMANY;
+			this.fetchType = manyToMany.fetch();
+		}
+
 		this.lazy = field.getAnnotation(Lazy.class);
 		this.joinColumn = field.getAnnotation(JoinColumn.class);
 		this.joinColumns = field.getAnnotation(JoinColumns.class);
 		this.joinTable = field.getAnnotation(JoinTable.class);
 		this.inverseJoinColumn = field.getAnnotation(InverseJoinColumn.class);
 		this.entityMapper = field.getAnnotation(EntityMapper.class);
-		this.isLazy = (lazy != null && lazy.value() == true);
+
+		if (fetchEager == true) {
+			isLazy = false;
+		} else {
+			if (lazy != null) {
+				isLazy = lazy.value();
+			} else {
+				isLazy = fetchType == FetchType.LAZY;
+			}
+		}
 
 		TableIdCondition tidCondition = new TableIdCondition(entity.getClass());
 		this.tableId = tidCondition.getTableId();
 		this.fieldOfTableId = tidCondition.getFieldOfTableId();
 
+		if (inverseJoinColumn != null) {
+			TableIdCondition tidConditionInverse = new TableIdCondition(fieldClass);
+			this.inverseTableId = tidConditionInverse.getTableId();
+			this.fieldOfInverseTableId = tidConditionInverse.getFieldOfTableId();
+		}
+
+		if (!isCollection) {
+			TableIdCondition tidConditionRef = new TableIdCondition(fieldClass);
+			this.refTableId = tidConditionRef.getTableId();
+			this.fieldOfRefTableId = tidConditionRef.getFieldOfTableId();
+		}
+		
 		this.mapperClass = null;
 		if (entityMapper != null && entityMapper.targetMapper() != void.class) {
 			mapperClass = entityMapper.targetMapper();
@@ -376,6 +424,78 @@ public class FieldCondition<T> {
 
 	public void setJoinTableMapperClass(Class<?> joinTableMapperClass) {
 		this.joinTableMapperClass = joinTableMapperClass;
+	}
+
+	public Boolean getFetchEager() {
+		return fetchEager;
+	}
+
+	public void setFetchEager(Boolean fetchEager) {
+		this.fetchEager = fetchEager;
+	}
+
+	public RelationType getRelationType() {
+		return relationType;
+	}
+
+	public void setRelationType(RelationType relationType) {
+		this.relationType = relationType;
+	}
+
+	public FetchType getFetchType() {
+		return fetchType;
+	}
+
+	public void setFetchType(FetchType fetchType) {
+		this.fetchType = fetchType;
+	}
+
+	public TableId getInverseTableId() {
+		return inverseTableId;
+	}
+
+	public void setInverseTableId(TableId inverseTableId) {
+		this.inverseTableId = inverseTableId;
+	}
+
+	public Field getFieldOfInverseTableId() {
+		return fieldOfInverseTableId;
+	}
+
+	public void setFieldOfInverseTableId(Field fieldOfInverseTableId) {
+		this.fieldOfInverseTableId = fieldOfInverseTableId;
+	}
+
+	public TableField getInverseTableField() {
+		return inverseTableField;
+	}
+
+	public void setInverseTableField(TableField inverseTableField) {
+		this.inverseTableField = inverseTableField;
+	}
+
+	public TableId getRefTableId() {
+		return refTableId;
+	}
+
+	public void setRefTableId(TableId refTableId) {
+		this.refTableId = refTableId;
+	}
+
+	public Field getFieldOfRefTableId() {
+		return fieldOfRefTableId;
+	}
+
+	public void setFieldOfRefTableId(Field fieldOfRefTableId) {
+		this.fieldOfRefTableId = fieldOfRefTableId;
+	}
+
+	public TableField getRefTableField() {
+		return refTableField;
+	}
+
+	public void setRefTableField(TableField refTableField) {
+		this.refTableField = refTableField;
 	}
 
 }
