@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 public class ServiceImpl<M extends BaseMapper<T>, T>
 		extends com.baomidou.mybatisplus.extension.service.impl.ServiceImpl<BaseMapper<T>, T> implements IService<T> {
 	@Autowired(required = false)
-	AutoMapper autoMapper;
+	protected AutoMapper autoMapper;
 
 	private boolean autoMapperEnabled = true;
 
