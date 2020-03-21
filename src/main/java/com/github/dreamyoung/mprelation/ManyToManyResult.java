@@ -123,9 +123,7 @@ public class ManyToManyResult<T, E, X> {
 				}
 
 				try {
-					if (listForThisEntity != null && listForThisEntity.size() > 0) {
-						field.set(entity, listForThisEntity);
-					}
+					field.set(entity, listForThisEntity);
 				} catch (
 
 				Exception e) {
@@ -137,7 +135,6 @@ public class ManyToManyResult<T, E, X> {
 	}
 
 	public void handleLazy(Field field) {
-
 		final BaseMapper<E> mapper = (BaseMapper<E>) this.mapperE;
 		Map<String, List<X>> entityXListMap = new HashMap<String, List<X>>();
 
@@ -158,7 +155,7 @@ public class ManyToManyResult<T, E, X> {
 			}
 		}
 		columnPropertyValueList = idListDistinct;
-		
+
 		if (fieldCollectionType == FieldCollectionType.SET) {
 
 			for (int i = 0; i < this.list.size(); i++) {
@@ -180,7 +177,6 @@ public class ManyToManyResult<T, E, X> {
 						if (isExeSqlMap.get(field.getName()) == false) {
 							isExeSqlMap.put(field.getName(), true);
 
-							
 							entityXList = mapperX
 									.selectList(new QueryWrapper<X>().in(refColumn, columnPropertyValueList));
 							if (!entityXListMap.containsKey(fieldCode)) {
@@ -288,9 +284,7 @@ public class ManyToManyResult<T, E, X> {
 
 				// 设置代理
 				try {
-					if (setForThisEntityProxy != null && setForThisEntityProxy.size() > 0) {
-						field.set(entity, setForThisEntityProxy);
-					}
+					field.set(entity, setForThisEntityProxy);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -422,9 +416,7 @@ public class ManyToManyResult<T, E, X> {
 
 				// 设置代理
 				try {
-					if (listForThisEntityProxy != null && listForThisEntityProxy.size() > 0) {
-						field.set(entity, listForThisEntityProxy);
-					}
+					field.set(entity, listForThisEntityProxy);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

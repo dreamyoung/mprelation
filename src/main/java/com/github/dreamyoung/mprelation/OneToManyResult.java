@@ -25,6 +25,7 @@ public class OneToManyResult<T, E> {
 	private String fieldCode;
 	private String refColumn;
 	private BaseMapper<E> mapperE;
+	private Map<String, BaseMapper<E>> mapperMap;
 	private FieldCollectionType fieldCollectionType;
 	private ArrayList<Serializable> columnPropertyValueList;
 
@@ -110,7 +111,7 @@ public class OneToManyResult<T, E> {
 
 	public void handleLazy(Field field) {
 		final BaseMapper<E> mapper = (BaseMapper<E>) this.mapperE;
-		
+
 		ArrayList<Serializable> idListDistinct = new ArrayList<Serializable>();
 		if (columnPropertyValueList.size() > 0) {
 			for (int s = 0; s < columnPropertyValueList.size(); s++) {
@@ -128,7 +129,7 @@ public class OneToManyResult<T, E> {
 			}
 		}
 		columnPropertyValueList = idListDistinct;
-		
+
 		if (fieldCollectionType == FieldCollectionType.SET) {
 			for (int i = 0; i < this.list.size(); i++) {
 				T entity = list.get(i);
@@ -182,9 +183,7 @@ public class OneToManyResult<T, E> {
 
 				// 设置代理
 				try {
-					if (setForThisEntityProxy != null && setForThisEntityProxy.size() > 0) {
-						field.set(entity, setForThisEntityProxy);
-					}
+					field.set(entity, setForThisEntityProxy);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -242,9 +241,7 @@ public class OneToManyResult<T, E> {
 
 				// 设置代理
 				try {
-					if (listForThisEntityProxy != null && listForThisEntityProxy.size() > 0) {
-						field.set(entity, listForThisEntityProxy);
-					}
+					field.set(entity, listForThisEntityProxy);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -352,4 +349,13 @@ public class OneToManyResult<T, E> {
 	public void setFields(Field[] fields) {
 		this.fields = fields;
 	}
+
+	public Map<String, BaseMapper<E>> getMapperMap() {
+		return mapperMap;
+	}
+
+	public void setMapperMap(Map<String, BaseMapper<E>> mapperMap) {
+		this.mapperMap = mapperMap;
+	}
+
 }

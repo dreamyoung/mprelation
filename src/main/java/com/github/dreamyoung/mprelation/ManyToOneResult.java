@@ -5,7 +5,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -20,8 +19,8 @@ public class ManyToOneResult<T, E> {
 	private List<T> list;
 	private Field[] fields;
 	private Collection<E> CollectionAll;
-	private E entityE;
 	private boolean lazy;
+	private Class<?> fieldClass;
 	private String fieldCode;
 	private String refColumn;
 	private BaseMapper<E> mapperE;
@@ -57,7 +56,7 @@ public class ManyToOneResult<T, E> {
 				String columnProperty = columnPropertyMap.get(fieldCode);
 				String refColumnProperty = refColumnPropertyMap.get(fieldCode);
 
-				Collection<E> listForThisEntity = new ArrayList<E>();
+				E objForThisEntity = null;
 
 				for (int k = 0; k < listAll.size(); k++) {
 					E entityE = listAll.get(k);
@@ -73,7 +72,8 @@ public class ManyToOneResult<T, E> {
 						Object refCoumnValue = entity2Field.get(entityE);
 
 						if (columnValue.toString().equals(refCoumnValue.toString())) {
-							listForThisEntity.add(entityE);
+							objForThisEntity = entityE;
+							break;
 						}
 					} catch (Exception e1) {
 						e1.printStackTrace();
@@ -82,10 +82,7 @@ public class ManyToOneResult<T, E> {
 				}
 
 				try {
-					List<E> listFirst = (List<E>) listForThisEntity;
-					if (listFirst != null && listFirst.size() > 0) {
-						field.set(entity, listFirst.get(0));
-					}
+					field.set(entity, objForThisEntity);
 				} catch (
 
 				Exception e) {
@@ -98,7 +95,7 @@ public class ManyToOneResult<T, E> {
 
 	public void handleLazy(Field field) {
 		final BaseMapper<E> mapper = (BaseMapper<E>) this.mapperE;
-		
+
 		ArrayList<Serializable> idListDistinct = new ArrayList<Serializable>();
 		if (columnPropertyValueList.size() > 0) {
 			for (int s = 0; s < columnPropertyValueList.size(); s++) {
@@ -116,14 +113,16 @@ public class ManyToOneResult<T, E> {
 			}
 		}
 		columnPropertyValueList = idListDistinct;
-		
+
 		for (int i = 0; i < this.list.size(); i++) {
 			T entity = list.get(i);
+			@SuppressWarnings("unchecked")
+			Class<E> entityEClass = (Class<E>) field.getType();
 
 			@SuppressWarnings("unchecked")
-			List<E> listForThisEntityProxy = (List<E>) Enhancer.create(List.class, new LazyLoader() {
+			E objForThisEntityProxy = (E) Enhancer.create(entityEClass, new LazyLoader() {
 				@Override
-				public List<E> loadObject() throws Exception {
+				public E loadObject() throws Exception {
 					if (isExeSqlMap.get(field.getName()) == false) {
 						collectionMap.put(field.getName(),
 								mapper.selectList(new QueryWrapper<E>().in(refColumn, columnPropertyValueList)));
@@ -135,10 +134,7 @@ public class ManyToOneResult<T, E> {
 					String columnProperty = columnPropertyMap.get(fieldCode);
 					String refColumnProperty = refColumnPropertyMap.get(fieldCode);
 
-					Collection<E> listForThisEntity = new ArrayList<E>();
-					if (fieldCollectionType == FieldCollectionType.SET) {
-						listForThisEntity = new HashSet<E>();
-					}
+					E objForThisEntity = null;
 
 					for (int k = 0; k < listAll.size(); k++) {
 						E entityE = listAll.get(k);
@@ -154,7 +150,8 @@ public class ManyToOneResult<T, E> {
 							Object refCoumnValue = entity2Field.get(entityE);
 
 							if (columnValue.toString().equals(refCoumnValue.toString())) {
-								listForThisEntity.add(entityE);
+								objForThisEntity = entityE;
+								break;
 							}
 						} catch (Exception e1) {
 							e1.printStackTrace();
@@ -162,17 +159,19 @@ public class ManyToOneResult<T, E> {
 
 					}
 
-					return (List<E>) listForThisEntity;
+					if (listAll == null || listAll.size() == 0 || objForThisEntity == null) {
+						Class<E> e2Class = (Class<E>) fieldClass;
+						objForThisEntity = e2Class.newInstance();
+					}
+
+					return objForThisEntity;
 				}
 
 			});
 
 			// 设置代理
 			try {
-				List<E> listFirst = (List<E>) listForThisEntityProxy;
-				if (listFirst != null && listFirst.size() > 0) {
-					field.set(entity, listFirst.get(0));
-				}
+				field.set(entity, objForThisEntityProxy);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -280,11 +279,12 @@ public class ManyToOneResult<T, E> {
 		this.fields = fields;
 	}
 
-	public E getEntityE() {
-		return entityE;
+	public Class<?> getFieldClass() {
+		return fieldClass;
 	}
 
-	public void setEntityE(E entityE) {
-		this.entityE = entityE;
+	public void setFieldClass(Class<?> fieldClass) {
+		this.fieldClass = fieldClass;
 	}
+
 }
