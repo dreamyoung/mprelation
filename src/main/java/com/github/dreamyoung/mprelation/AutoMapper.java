@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -204,64 +206,6 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @param list
 	 * @return entity list
 	 */
-	public <T> Collection<T> mapperEntityCollection(Collection<T> list) {
-		if (list != null && list.size() > 0) {
-			if (list.getClass() == List.class || list.getClass() == ArrayList.class) {
-				list = mapperEntityList((List<T>) list);
-			} else {
-				list = mapperEntitySet((Set<T>) list);
-			}
-		}
-
-		return list;
-	}
-
-	/**
-	 * an entity list auto related eager or not
-	 * 
-	 * @param <T>
-	 * @param list
-	 * @param fetchEager
-	 * @return entity list
-	 */
-	public <T> Collection<T> mapperEntityCollection(Collection<T> list, boolean fetchEager) {
-		if (list != null && list.size() > 0) {
-			if (list.getClass() == List.class || list.getClass() == ArrayList.class) {
-				list = mapperEntityList((List<T>) list, fetchEager);
-			} else {
-				list = mapperEntitySet((Set<T>) list, fetchEager);
-			}
-		}
-
-		return list;
-	}
-
-	/**
-	 * an entity list auto related by one of property name
-	 * 
-	 * @param <T>
-	 * @param list
-	 * @param propertyName
-	 * @return entity list
-	 */
-	public <T> Collection<T> mapperEntityCollection(Collection<T> list, String propertyName) {
-		if (list != null && list.size() > 0) {
-			if (list.getClass() == List.class || list.getClass() == ArrayList.class) {
-				list = mapperEntityList((List<T>) list, propertyName);
-			} else {
-				list = mapperEntitySet((Set<T>) list, propertyName);
-			}
-		}
-		return list;
-	}
-
-	/**
-	 * an entity list auto related
-	 * 
-	 * @param <T>
-	 * @param list
-	 * @return entity list
-	 */
 	public <T> List<T> mapperEntityList(List<T> list) {
 		if (list != null && list.size() > 0) {
 			list = super.manyToOne(list, null, false);
@@ -421,6 +365,148 @@ public class AutoMapper extends AbstractAutoMapper {
 		list = mapperEntityList(list, propertyName);
 
 		return page;
+	}
+
+	/**
+	 * an entity list auto related
+	 * 
+	 * @param <T>
+	 * @param list
+	 * @return entity list
+	 */
+	public <T> Collection<T> mapperEntityCollection(Collection<T> list) {
+		if (list != null && list.size() > 0) {
+			if (list.getClass() == List.class || list.getClass() == ArrayList.class) {
+				list = mapperEntityList((List<T>) list);
+			} else {
+				list = mapperEntitySet((Set<T>) list);
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * an entity list auto related eager or not
+	 * 
+	 * @param <T>
+	 * @param list
+	 * @param fetchEager
+	 * @return entity list
+	 */
+	public <T> Collection<T> mapperEntityCollection(Collection<T> list, boolean fetchEager) {
+		if (list != null && list.size() > 0) {
+			if (list.getClass() == List.class || list.getClass() == ArrayList.class) {
+				list = mapperEntityList((List<T>) list, fetchEager);
+			} else {
+				list = mapperEntitySet((Set<T>) list, fetchEager);
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * an entity list auto related by one of property name
+	 * 
+	 * @param <T>
+	 * @param list
+	 * @param propertyName
+	 * @return entity list
+	 */
+	public <T> Collection<T> mapperEntityCollection(Collection<T> list, String propertyName) {
+		if (list != null && list.size() > 0) {
+			if (list.getClass() == List.class || list.getClass() == ArrayList.class) {
+				list = mapperEntityList((List<T>) list, propertyName);
+			} else {
+				list = mapperEntitySet((Set<T>) list, propertyName);
+			}
+		}
+		return list;
+	}
+
+	/**
+	 * an entity/entity list/entity set/entity page auto related eager or not
+	 * 
+	 * @param <E>
+	 * @param <T>
+	 * @param object
+	 * @param fetchEager
+	 */
+	@SuppressWarnings("unchecked")
+	public <E extends IPage<T>, T> void mapper(Object object) {
+		if (object != null) {
+			if (object.getClass() == List.class || object.getClass() == ArrayList.class) {
+				mapperEntityList((List<T>) object);
+			} else if (object.getClass() == Set.class || object.getClass() == HashSet.class) {
+				mapperEntitySet((Set<T>) object);
+			} else if (object instanceof IPage) {
+				mapperEntityPage((E) object);
+			} else {
+				mapperEntity(object);
+			}
+		}
+	}
+
+	/**
+	 * an entity/entity list/entity set/entity page auto related eager or not
+	 * 
+	 * @param <E>
+	 * @param <T>
+	 * @param object
+	 * @param fetchEager
+	 */
+	@SuppressWarnings("unchecked")
+	public <E extends IPage<T>, T> void mapper(Object object, boolean fetchEager) {
+		if (object != null) {
+			if (object.getClass() == List.class || object.getClass() == ArrayList.class) {
+				mapperEntityList((List<T>) object, fetchEager);
+			} else if (object.getClass() == Set.class || object.getClass() == HashSet.class) {
+				mapperEntitySet((Set<T>) object, fetchEager);
+			} else if (object instanceof IPage) {
+				mapperEntityPage((E) object, fetchEager);
+			} else {
+				mapperEntity(object, fetchEager);
+			}
+		}
+	}
+
+	/**
+	 * an entity/entity list/entity set/entity page auto related by one of property
+	 * name
+	 * 
+	 * @param <E>
+	 * @param <T>
+	 * @param object
+	 * @param fetchEager
+	 */
+	@SuppressWarnings("unchecked")
+	public <E extends IPage<T>, T> void mapper(Object object, String propertyName) {
+		if (object != null) {
+			if (object.getClass() == List.class || object.getClass() == ArrayList.class) {
+				mapperEntityList((List<T>) object, propertyName);
+			} else if (object.getClass() == Set.class || object.getClass() == HashSet.class) {
+				mapperEntitySet((Set<T>) object, propertyName);
+			} else if (object instanceof IPage) {
+				mapperEntityPage((E) object, propertyName);
+			} else {
+				mapperEntity(object, propertyName);
+			}
+		}
+	}
+
+	/**
+	 * initialize one or more lazy property manually with transactional sqlsession
+	 * @param <E>
+	 * @param <T>
+	 * @param object
+	 * @param propertyNames
+	 */
+	@Transactional(readOnly = true)
+	public <E extends IPage<T>, T> void initialize(Object object, String... propertyNames) {
+		for (String propertyName : propertyNames) {
+			mapper(object, propertyName);
+		}
 	}
 
 	public String[] getEntityPackages() {

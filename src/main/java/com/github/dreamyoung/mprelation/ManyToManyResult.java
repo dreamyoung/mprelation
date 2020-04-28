@@ -143,18 +143,23 @@ public class ManyToManyResult<T, E, X> {
 			for (int s = 0; s < columnPropertyValueList.size(); s++) {
 				boolean isExists = false;
 				for (int ss = 0; ss < idListDistinct.size(); ss++) {
-					if (columnPropertyValueList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
+					if (columnPropertyValueList.get(s) != null && idListDistinct.get(ss) != null
+							&& columnPropertyValueList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
 						isExists = true;
 						break;
 					}
 				}
 
-				if (!isExists) {
+				if (columnPropertyValueList.get(s) != null && !isExists) {
 					idListDistinct.add(columnPropertyValueList.get(s));
 				}
 			}
 		}
 		columnPropertyValueList = idListDistinct;
+
+		if (columnPropertyValueList == null || columnPropertyValueList.size() == 0) {
+			return;
+		}
 
 		if (fieldCollectionType == FieldCollectionType.SET) {
 
@@ -177,8 +182,14 @@ public class ManyToManyResult<T, E, X> {
 						if (isExeSqlMap.get(field.getName()) == false) {
 							isExeSqlMap.put(field.getName(), true);
 
-							entityXList = mapperX
-									.selectList(new QueryWrapper<X>().in(refColumn, columnPropertyValueList));
+							if (columnPropertyValueList.size() == 1) {
+								entityXList = mapperX.selectList(
+										new QueryWrapper<X>().select("DISTINCT "+inverseRefColumn).eq(refColumn, columnPropertyValueList.get(0)));
+							} else {
+								entityXList = mapperX
+										.selectList(new QueryWrapper<X>().select("DISTINCT "+inverseRefColumn).in(refColumn, columnPropertyValueList));
+							}
+
 							if (!entityXListMap.containsKey(fieldCode)) {
 								entityXListMap.put(fieldCode, entityXList);
 							}
@@ -203,21 +214,28 @@ public class ManyToManyResult<T, E, X> {
 								for (int s = 0; s < idList.size(); s++) {
 									boolean isExists = false;
 									for (int ss = 0; ss < idListDistinct.size(); ss++) {
-										if (idList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
+										if (idList.get(s) != null && idListDistinct.get(ss) != null
+												&& idList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
 											isExists = true;
 											break;
 										}
 									}
 
-									if (!isExists) {
+									if (idList.get(s) != null && !isExists) {
 										idListDistinct.add(idList.get(s));
 									}
 								}
 							}
 							idList = idListDistinct;
 
-							collectionMap.put(field.getName(), mapper.selectList(
-									new QueryWrapper<E>().in(inverseRefColumn, (ArrayList<Serializable>) idList)));
+							if (idList.size() == 1) {
+								collectionMap.put(field.getName(),
+										mapper.selectList(new QueryWrapper<E>().eq(inverseRefColumn, idList.get(0))));
+							} else {
+								collectionMap.put(field.getName(), mapper.selectList(
+										new QueryWrapper<E>().in(inverseRefColumn, (ArrayList<Serializable>) idList)));
+							}
+
 							isExeSqlMap.put(field.getName(), true);
 
 						}
@@ -250,7 +268,7 @@ public class ManyToManyResult<T, E, X> {
 
 								entity2Field = entityE.getClass().getDeclaredField(inverseColumnProperty);
 								entity2Field.setAccessible(true);
-								Object refCoumnValue = entity2Field.get(entityE);
+								Object refColumnValue = entity2Field.get(entityE);
 
 								// table1~table3&&table2~table3
 								for (int x = 0; x < entityXList.size(); x++) {
@@ -266,8 +284,10 @@ public class ManyToManyResult<T, E, X> {
 									entityXField2.setAccessible(true);
 									Object refColumnValueX = entityXField2.get(entityX);
 
-									if (columnValueX.toString().equals(columnValue.toString())
-											&& refColumnValueX.toString().equals(refCoumnValue.toString())) {
+									if (columnValueX != null && columnValue != null && refColumnValueX != null
+											&& refColumnValue != null
+											&& columnValueX.toString().equals(columnValue.toString())
+											&& refColumnValueX.toString().equals(refColumnValue.toString())) {
 										listForThisEntity.add(entityE);
 									}
 								}
@@ -309,8 +329,13 @@ public class ManyToManyResult<T, E, X> {
 						if (isExeSqlMap.get(field.getName()) == false) {
 							isExeSqlMap.put(field.getName(), true);
 
-							entityXList = mapperX
-									.selectList(new QueryWrapper<X>().in(refColumn, columnPropertyValueList));
+							if (columnPropertyValueList.size() == 1) {
+								entityXList = mapperX.selectList(
+										new QueryWrapper<X>().select("DISTINCT "+inverseRefColumn).eq(refColumn, columnPropertyValueList.get(0)));
+							} else {
+								entityXList = mapperX
+										.selectList(new QueryWrapper<X>().select("DISTINCT "+inverseRefColumn).in(refColumn, columnPropertyValueList));
+							}
 							if (!entityXListMap.containsKey(fieldCode)) {
 								entityXListMap.put(fieldCode, entityXList);
 							}
@@ -335,21 +360,28 @@ public class ManyToManyResult<T, E, X> {
 								for (int s = 0; s < idList.size(); s++) {
 									boolean isExists = false;
 									for (int ss = 0; ss < idListDistinct.size(); ss++) {
-										if (idList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
+										if (idList.get(s) != null && idListDistinct.get(ss) != null
+												&& idList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
 											isExists = true;
 											break;
 										}
 									}
 
-									if (!isExists) {
+									if (idList.get(s) != null && !isExists) {
 										idListDistinct.add(idList.get(s));
 									}
 								}
 							}
 							idList = idListDistinct;
 
-							collectionMap.put(field.getName(), mapper.selectList(
-									new QueryWrapper<E>().in(inverseRefColumn, (ArrayList<Serializable>) idList)));
+							if (idList.size() == 1) {
+								collectionMap.put(field.getName(),
+										mapper.selectList(new QueryWrapper<E>().eq(inverseRefColumn, idList.get(0))));
+							} else {
+								collectionMap.put(field.getName(), mapper.selectList(
+										new QueryWrapper<E>().in(inverseRefColumn, (ArrayList<Serializable>) idList)));
+							}
+
 							isExeSqlMap.put(field.getName(), true);
 
 						}
@@ -382,7 +414,7 @@ public class ManyToManyResult<T, E, X> {
 
 								entity2Field = entityE.getClass().getDeclaredField(inverseColumnProperty);
 								entity2Field.setAccessible(true);
-								Object refCoumnValue = entity2Field.get(entityE);
+								Object refColumnValue = entity2Field.get(entityE);
 
 								// table1~table3&&table2~table3
 								for (int x = 0; x < entityXList.size(); x++) {
@@ -398,8 +430,10 @@ public class ManyToManyResult<T, E, X> {
 									entityXField2.setAccessible(true);
 									Object refColumnValueX = entityXField2.get(entityX);
 
-									if (columnValueX.toString().equals(columnValue.toString())
-											&& refColumnValueX.toString().equals(refCoumnValue.toString())) {
+									if (columnValueX != null && columnValue != null && refColumnValueX != null
+											&& refColumnValue != null
+											&& columnValueX.toString().equals(columnValue.toString())
+											&& refColumnValueX.toString().equals(refColumnValue.toString())) {
 										listForThisEntity.add(entityE);
 									}
 								}

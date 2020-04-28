@@ -340,13 +340,13 @@ public abstract class AbstractAutoMapper {
 				for (int s = 0; s < columnPropertyValueList.size(); s++) {
 					boolean isExists = false;
 					for (int ss = 0; ss < idListDistinct.size(); ss++) {
-						if (columnPropertyValueList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
+						if (columnPropertyValueList.get(s)!=null && idListDistinct.get(ss)!=null && columnPropertyValueList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
 							isExists = true;
 							break;
 						}
 					}
 
-					if (!isExists) {
+					if (columnPropertyValueList.get(s)!=null && !isExists) {
 						idListDistinct.add(columnPropertyValueList.get(s));
 					}
 				}
@@ -366,6 +366,10 @@ public abstract class AbstractAutoMapper {
 			oneToManyResult.setRefColumnPropertyMap(refColumnPropertyMap);
 			oneToManyResult.setFields(fields);
 
+			if(columnPropertyValueList==null || columnPropertyValueList.size()==0) {
+				return list;
+			}
+			
 			if (!lazy) {
 				List<E> listAll = mapper.selectList(new QueryWrapper<E>().in(refColumn, columnPropertyValueList));
 
@@ -499,15 +503,16 @@ public abstract class AbstractAutoMapper {
 						BaseMapper<E> mapper = (BaseMapper<E>) factory.getObject().getMapper(mapperClass);
 						E e = (E) mapper.selectOne(new QueryWrapper<E>().eq(refColumn, columnPropertyValue));
 						fc.setFieldValueByObject(e);
-					} else {//lazy
+					} else {// lazy
 						boolean needLazyProcessor = false;
-						if(entity.getClass().isAnnotationPresent(AutoLazy.class) && entity.getClass().getDeclaredAnnotation(AutoLazy.class).value()==true) {
+						if (entity.getClass().isAnnotationPresent(AutoLazy.class)
+								&& entity.getClass().getDeclaredAnnotation(AutoLazy.class).value() == true) {
 							needLazyProcessor = true;
 						}
-						if(!needLazyProcessor) {
+						if (!needLazyProcessor) {
 							continue;
 						}
-						
+
 						final Serializable columnPropertyValueX = columnPropertyValue;
 
 						E e = (E) Enhancer.create(fc.getFieldClass(), new LazyLoader() {
@@ -684,13 +689,15 @@ public abstract class AbstractAutoMapper {
 				for (int s = 0; s < columnPropertyValueList.size(); s++) {
 					boolean isExists = false;
 					for (int ss = 0; ss < idListDistinct.size(); ss++) {
-						if (columnPropertyValueList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
+						if (columnPropertyValueList.get(s) != null && idListDistinct.get(ss) != null
+								&& columnPropertyValueList.get(s).toString()
+										.equals(idListDistinct.get(ss).toString())) {
 							isExists = true;
 							break;
 						}
 					}
 
-					if (!isExists) {
+					if (columnPropertyValueList.get(s) != null && !isExists) {
 						idListDistinct.add(columnPropertyValueList.get(s));
 					}
 				}
@@ -710,9 +717,18 @@ public abstract class AbstractAutoMapper {
 			oneToOneResult.setRefColumnPropertyMap(refColumnPropertyMap);
 			oneToOneResult.setFields(fields);
 
+			if(columnPropertyValueList==null || columnPropertyValueList.size()==0) {
+				return list;
+			}
+			
 			if (!lazy) {
 
-				List<E> listAll = mapper.selectList(new QueryWrapper<E>().in(refColumn, columnPropertyValueList));
+				List<E> listAll = null;
+				if (columnPropertyValueList.size() == 1) {
+					listAll = mapper.selectList(new QueryWrapper<E>().eq(refColumn, columnPropertyValueList.get(0)));
+				} else {
+					listAll = mapper.selectList(new QueryWrapper<E>().in(refColumn, columnPropertyValueList));
+				}
 				oneToOneResult.setCollectionAll(listAll);
 
 				oneToOneResult.handle(field);
@@ -825,15 +841,16 @@ public abstract class AbstractAutoMapper {
 						BaseMapper<E> mapper = (BaseMapper<E>) factory.getObject().getMapper(mapperClass);
 						E e = (E) mapper.selectOne(new QueryWrapper<E>().eq(refColumn, columnPropertyValue));
 						fc.setFieldValueByObject(e);
-					} else {//lazy
+					} else {// lazy
 						boolean needLazyProcessor = false;
-						if(entity.getClass().isAnnotationPresent(AutoLazy.class) && entity.getClass().getDeclaredAnnotation(AutoLazy.class).value()==true) {
+						if (entity.getClass().isAnnotationPresent(AutoLazy.class)
+								&& entity.getClass().getDeclaredAnnotation(AutoLazy.class).value() == true) {
 							needLazyProcessor = true;
 						}
-						if(!needLazyProcessor) {
+						if (!needLazyProcessor) {
 							continue;
 						}
-						
+
 						final Serializable columnPropertyValueX = columnPropertyValue;
 						E e = (E) Enhancer.create(fc.getFieldClass(), new LazyLoader() {
 							@Override
@@ -1007,13 +1024,15 @@ public abstract class AbstractAutoMapper {
 				for (int s = 0; s < columnPropertyValueList.size(); s++) {
 					boolean isExists = false;
 					for (int ss = 0; ss < idListDistinct.size(); ss++) {
-						if (columnPropertyValueList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
+						if (columnPropertyValueList.get(s) != null && idListDistinct.get(ss) != null
+								&& columnPropertyValueList.get(s).toString()
+										.equals(idListDistinct.get(ss).toString())) {
 							isExists = true;
 							break;
 						}
 					}
 
-					if (!isExists) {
+					if (columnPropertyValueList.get(s) != null && !isExists) {
 						idListDistinct.add(columnPropertyValueList.get(s));
 					}
 				}
@@ -1033,20 +1052,32 @@ public abstract class AbstractAutoMapper {
 			manyToOneResult.setRefColumnPropertyMap(refColumnPropertyMap);
 			manyToOneResult.setFields(fields);
 
+			if(columnPropertyValueList==null || columnPropertyValueList.size()==0) {
+				return list;
+			}
+			
 			if (!lazy) {
-				List<E> listAll = mapper.selectList(new QueryWrapper<E>().in(refColumn, columnPropertyValueList));
+
+				List<E> listAll = null;
+				if (columnPropertyValueList.size() == 1) {
+					listAll = mapper.selectList(new QueryWrapper<E>().eq(refColumn, columnPropertyValueList.get(0)));
+				} else {
+					listAll = mapper.selectList(new QueryWrapper<E>().in(refColumn, columnPropertyValueList));
+				}
+
 				manyToOneResult.setCollectionAll(listAll);
 
 				manyToOneResult.handle(field);
 			} else {// lazy
 				boolean needLazyProcessor = false;
-				if(entityFirst.getClass().isAnnotationPresent(AutoLazy.class) && entityFirst.getClass().getDeclaredAnnotation(AutoLazy.class).value()==true) {
+				if (entityFirst.getClass().isAnnotationPresent(AutoLazy.class)
+						&& entityFirst.getClass().getDeclaredAnnotation(AutoLazy.class).value() == true) {
 					needLazyProcessor = true;
 				}
-				if(!needLazyProcessor) {
+				if (!needLazyProcessor) {
 					continue;
 				}
-				
+
 				manyToOneResult.setCollectionAll(null);
 				manyToOneResult.handleLazy(field);
 
@@ -1176,15 +1207,16 @@ public abstract class AbstractAutoMapper {
 						BaseMapper<E> mapper = (BaseMapper<E>) factory.getObject().getMapper(mapperClass);
 						List<E> list = mapper.selectBatchIds(idList);
 						fc.setFieldValueByList(list);
-					} else {//lazy
+					} else {// lazy
 						boolean needLazyProcessor = false;
-						if(entity.getClass().isAnnotationPresent(AutoLazy.class) && entity.getClass().getDeclaredAnnotation(AutoLazy.class).value()==true) {
+						if (entity.getClass().isAnnotationPresent(AutoLazy.class)
+								&& entity.getClass().getDeclaredAnnotation(AutoLazy.class).value() == true) {
 							needLazyProcessor = true;
 						}
-						if(!needLazyProcessor) {
+						if (!needLazyProcessor) {
 							continue;
 						}
-						
+
 						final Serializable columnPropertyValueX = columnPropertyValue;
 						Enhancer enhancer = new Enhancer();
 						enhancer.setSuperclass(List.class);
@@ -1511,6 +1543,10 @@ public abstract class AbstractAutoMapper {
 			manyToManyResult.setInverseRefColumnPropertyMap(inverseRefColumnPropertyMap);
 			Map<String, List<X>> entityXListMap = new HashMap<String, List<X>>();
 
+			if(columnPropertyValueList==null || columnPropertyValueList.size()==0) {
+				return list;
+			}
+			
 			if (!lazy) {
 				// get list from join table 3
 				List<X> entityXList = mapperX.selectList(new QueryWrapper<X>().in(refColumn, columnPropertyValueList));
@@ -1542,13 +1578,13 @@ public abstract class AbstractAutoMapper {
 					for (int s = 0; s < idList.size(); s++) {
 						boolean isExists = false;
 						for (int ss = 0; ss < idListDistinct.size(); ss++) {
-							if (idList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
+							if (idList.get(s)!=null && idListDistinct.get(ss)!=null && idList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
 								isExists = true;
 								break;
 							}
 						}
 
-						if (!isExists) {
+						if (idList.get(s)!=null && !isExists) {
 							idListDistinct.add(idList.get(s));
 						}
 					}
@@ -1577,13 +1613,14 @@ public abstract class AbstractAutoMapper {
 				manyToManyResult.handle(field);
 			} else {// lazy
 				boolean needLazyProcessor = false;
-				if(entityFirst.getClass().isAnnotationPresent(AutoLazy.class) && entityFirst.getClass().getDeclaredAnnotation(AutoLazy.class).value()==true) {
+				if (entityFirst.getClass().isAnnotationPresent(AutoLazy.class)
+						&& entityFirst.getClass().getDeclaredAnnotation(AutoLazy.class).value() == true) {
 					needLazyProcessor = true;
 				}
-				if(!needLazyProcessor) {
+				if (!needLazyProcessor) {
 					continue;
 				}
-				
+
 				if (fieldCollectionType == FieldCollectionType.SET) {
 					manyToManyResult.setCollectionAll(null);
 					manyToManyResult.handleLazy(field);

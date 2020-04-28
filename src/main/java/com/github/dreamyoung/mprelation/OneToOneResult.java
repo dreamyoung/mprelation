@@ -71,7 +71,7 @@ public class OneToOneResult<T, E> {
 						entity2Field.setAccessible(true);
 						Object refCoumnValue = entity2Field.get(entityE);
 
-						if (columnValue.toString().equals(refCoumnValue.toString())) {
+						if (columnValue != null && columnValue.toString().equals(refCoumnValue.toString())) {
 							objForThisEntity = entityE;
 							break;
 						}
@@ -101,18 +101,23 @@ public class OneToOneResult<T, E> {
 			for (int s = 0; s < columnPropertyValueList.size(); s++) {
 				boolean isExists = false;
 				for (int ss = 0; ss < idListDistinct.size(); ss++) {
-					if (columnPropertyValueList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
+					if (columnPropertyValueList.get(s) != null && idListDistinct.get(ss) != null
+							&& columnPropertyValueList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
 						isExists = true;
 						break;
 					}
 				}
 
-				if (!isExists) {
+				if (columnPropertyValueList.get(s) != null && !isExists) {
 					idListDistinct.add(columnPropertyValueList.get(s));
 				}
 			}
 		}
 		columnPropertyValueList = idListDistinct;
+
+		if (columnPropertyValueList == null || columnPropertyValueList.size() == 0) {
+			return;
+		}
 
 		for (int i = 0; i < this.list.size(); i++) {
 			T entity = list.get(i);
@@ -125,8 +130,13 @@ public class OneToOneResult<T, E> {
 				@Override
 				public E loadObject() throws Exception {
 					if (isExeSqlMap.get(field.getName()) == false) {
-						collectionMap.put(field.getName(),
-								mapper.selectList(new QueryWrapper<E>().in(refColumn, columnPropertyValueList)));
+						if (columnPropertyValueList.size() == 1) {
+							collectionMap.put(field.getName(), mapper
+									.selectList(new QueryWrapper<E>().eq(refColumn, columnPropertyValueList.get(0))));
+						} else {
+							collectionMap.put(field.getName(),
+									mapper.selectList(new QueryWrapper<E>().in(refColumn, columnPropertyValueList)));
+						}
 						isExeSqlMap.put(field.getName(), true);
 					}
 
@@ -150,7 +160,7 @@ public class OneToOneResult<T, E> {
 							entity2Field.setAccessible(true);
 							Object refCoumnValue = entity2Field.get(entityE);
 
-							if (columnValue.toString().equals(refCoumnValue.toString())) {
+							if (columnValue != null && columnValue.toString().equals(refCoumnValue.toString())) {
 								objForThisEntity = entityE;
 								break;
 							}

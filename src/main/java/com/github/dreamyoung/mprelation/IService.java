@@ -4,9 +4,11 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 
 public interface IService<T> extends com.baomidou.mybatisplus.extension.service.IService<T> {
 	default T getById(Serializable id) {
@@ -57,7 +59,26 @@ public interface IService<T> extends com.baomidou.mybatisplus.extension.service.
 		}
 	}
 
+	default <E extends IPage<T>> E page(E page) {
+		if (isAutoMapperEnabled()) {
+			return getAutoMapper().mapperEntityPage(getBaseMapper().selectPage(page, Wrappers.emptyWrapper()));
+		} else {
+			return getBaseMapper().selectPage(page, Wrappers.emptyWrapper());
+		}
+	}
+
 	AutoMapper getAutoMapper();
 
 	boolean isAutoMapperEnabled();
+
+	<E extends IPage<T>> void initialize(Object t, String... propertyNames);
+
+	void initializeEntity(T t, String... propertyNames);
+
+	void initializeList(List<T> list, String... propertyNames);
+
+	void initializeSet(Set<T> list, String... propertyNames);
+
+	<E extends IPage<T>> void initializePage(E page, String... propertyNames);
+
 }
