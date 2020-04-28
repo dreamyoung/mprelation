@@ -426,12 +426,11 @@ public class AutoMapper extends AbstractAutoMapper {
 	}
 
 	/**
-	 * an entity/entity list/entity set/entity page auto related eager or not
+	 * an entity/entity list/entity set/entity page auto related
 	 * 
 	 * @param <E>
 	 * @param <T>
 	 * @param object
-	 * @param fetchEager
 	 */
 	@SuppressWarnings("unchecked")
 	public <E extends IPage<T>, T> void mapper(Object object) {
@@ -478,7 +477,7 @@ public class AutoMapper extends AbstractAutoMapper {
 	 * @param <E>
 	 * @param <T>
 	 * @param object
-	 * @param fetchEager
+	 * @param propertyName
 	 */
 	@SuppressWarnings("unchecked")
 	public <E extends IPage<T>, T> void mapper(Object object, String propertyName) {
