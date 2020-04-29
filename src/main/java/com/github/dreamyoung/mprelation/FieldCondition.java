@@ -11,13 +11,11 @@ import java.util.Set;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 
 public class FieldCondition<T> {
-	// @Autowired
 	private ObjectFactory<SqlSession> factory;
 
 	enum FieldCollectionType {
@@ -160,7 +158,7 @@ public class FieldCondition<T> {
 				mapperClass = Class.forName(className.toString());
 			} catch (ClassNotFoundException e) {
 				String entityName = this.getFieldClass().getSimpleName();
-				Collection<Class<?>> mappers = factory.getObject().getConfiguration().getMapperRegistry().getMappers();
+				Collection<Class<?>> mappers = this.factory.getObject().getConfiguration().getMapperRegistry().getMappers();
 				for (Class<?> mapperClz : mappers) {
 					String mapperClassName = mapperClz.getSimpleName();
 					if (mapperClassName.equalsIgnoreCase(entityName + "Mapper")) {
@@ -214,7 +212,7 @@ public class FieldCondition<T> {
 					joinTableMapperClass = Class.forName(className.toString());
 				} catch (ClassNotFoundException e) {
 					String entityName = entity.getClass().getSimpleName() + this.getFieldClass().getSimpleName();
-					Collection<Class<?>> mappers = factory.getObject().getConfiguration().getMapperRegistry().getMappers();
+					Collection<Class<?>> mappers = this.factory.getObject().getConfiguration().getMapperRegistry().getMappers();
 					for (Class<?> mapperClz : mappers) {
 						String mapperClassName = mapperClz.getSimpleName();
 						if (mapperClassName.equalsIgnoreCase(entityName + "Mapper")) {
