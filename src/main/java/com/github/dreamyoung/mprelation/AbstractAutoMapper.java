@@ -2,7 +2,6 @@ package com.github.dreamyoung.mprelation;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,8 +18,6 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.LazyLoader;
-import org.springframework.cglib.proxy.MethodInterceptor;
-import org.springframework.cglib.proxy.MethodProxy;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -30,13 +27,10 @@ import com.github.dreamyoung.mprelation.FieldCondition.FieldCollectionType;
 
 @SuppressWarnings({ "unused", "unchecked" })
 public abstract class AbstractAutoMapper {
-	// @Autowired SqlSession sqlSession;
 	@Autowired
 	ObjectFactory<SqlSession> factory;
 
 	protected Log log = LogFactory.getLog(getClass());
-
-	public abstract <M> BaseMapper<M> getMapperBean(Class<M> entityClass);
 
 	protected Map<String, String[]> entityMap = new HashMap<String, String[]>();
 
@@ -90,7 +84,7 @@ public abstract class AbstractAutoMapper {
 				}
 
 				if (field.isAnnotationPresent(OneToMany.class)) {
-					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager);
+					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
 					boolean lazy = false;
 					if (fc.getLazy() == null) {
 						if (fc.getOneToMany().fetch() == FetchType.LAZY) {
@@ -269,7 +263,7 @@ public abstract class AbstractAutoMapper {
 			for (Field field : fields) {
 				String fieldCode = field.getName();
 
-				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager);
+				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
 				boolean lazy = fc.getIsLazy();
 
 				JoinColumn joinColumn = fc.getJoinColumn();
@@ -468,7 +462,7 @@ public abstract class AbstractAutoMapper {
 					continue;
 				}
 				if (field.isAnnotationPresent(OneToOne.class)) {
-					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager);
+					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
 					boolean lazy = false;
 					if (fc.getLazy() == null) {
 						if (fc.getOneToOne().fetch() == FetchType.LAZY) {
@@ -615,7 +609,7 @@ public abstract class AbstractAutoMapper {
 			for (Field field : fields) {
 				String fieldCode = field.getName();
 
-				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager);
+				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
 				boolean lazy = fc.getIsLazy();
 
 				JoinColumn joinColumn = fc.getJoinColumn();
@@ -806,7 +800,7 @@ public abstract class AbstractAutoMapper {
 					continue;
 				}
 				if (field.isAnnotationPresent(ManyToOne.class)) {
-					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager);
+					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
 					boolean lazy = false;
 					if (fc.getLazy() == null) {
 						if (fc.getManyToOne().fetch() == FetchType.LAZY) {
@@ -950,7 +944,7 @@ public abstract class AbstractAutoMapper {
 			for (Field field : fields) {
 				String fieldCode = field.getName();
 
-				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager);
+				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
 				boolean lazy = fc.getIsLazy();
 
 				JoinColumn joinColumn = fc.getJoinColumn();
@@ -1141,7 +1135,7 @@ public abstract class AbstractAutoMapper {
 					continue;
 				}
 				if (field.isAnnotationPresent(ManyToMany.class)) {
-					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager);
+					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
 					boolean lazy = false;
 					if (fc.getLazy() == null) {
 						if (fc.getManyToMany().fetch() == FetchType.LAZY) {
@@ -1424,7 +1418,7 @@ public abstract class AbstractAutoMapper {
 			for (Field field : fields) {
 				String fieldCode = field.getName();
 
-				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager);
+				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
 				boolean lazy = fc.getIsLazy();
 
 				JoinColumn joinColumn = fc.getJoinColumn();

@@ -7,7 +7,7 @@
     <artifactId>mprelation</artifactId>
     <packaging>jar</packaging>
     <name>mprelation Library</name>
-    <version>0.0.3</version>
+    <version>0.0.3-RELEASE</version>
     <url>https://github.com/dreamyoung/mprelation</url>
     <description>mprelation is a tool for  one2one/one2many/many2one/many2many in mybatis-plus</description>
     <inceptionYear>2020</inceptionYear>

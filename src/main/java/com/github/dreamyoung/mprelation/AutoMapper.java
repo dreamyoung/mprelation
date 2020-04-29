@@ -11,11 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
 /**
@@ -25,23 +22,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
  *
  */
 public class AutoMapper extends AbstractAutoMapper {
-	@Autowired(required = false)
-	ApplicationContext applicationContext;
-
 	private String[] entityPackages;
 
 	public AutoMapper() {
-		throw new AutoMapperConfigurationException(
-				"CONFIG ERR: ApplicationContext and EntityPackages are not configured!");
-	}
-
-	public AutoMapper(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
 		this.entityPackages = new String[] {};
 	}
 
-	public AutoMapper(ApplicationContext applicationContext, String[] entityPackages) {
-		this.applicationContext = applicationContext;
+	public AutoMapper(String[] entityPackages) {
 		this.entityPackages = entityPackages;
 
 		if (entityPackages != null && entityPackages.length > 0) {
@@ -132,19 +119,7 @@ public class AutoMapper extends AbstractAutoMapper {
 		}
 	}
 
-	public ApplicationContext getApplicationContext() {
-		return applicationContext;
-	}
 
-	public void setApplicationContext(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
-	}
-
-	@SuppressWarnings({ "unchecked" })
-	@Override
-	public <M> BaseMapper<M> getMapperBean(Class<M> entityClass) {
-		return (BaseMapper<M>) applicationContext.getBean(entityClass);
-	}
 
 	/**
 	 * an entity auto related

@@ -4,14 +4,22 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.ibatis.session.SqlSession;
+import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 
 public class FieldCondition<T> {
+	// @Autowired
+	private ObjectFactory<SqlSession> factory;
+
 	enum FieldCollectionType {
 		LIST, SET, NONE
 	};
@@ -53,7 +61,9 @@ public class FieldCondition<T> {
 	private Class<?> mapperClass;
 	private Class<?> joinTableMapperClass;
 
-	public FieldCondition(T entity, Field field, boolean fetchEager) {
+	public FieldCondition(T entity, Field field, boolean fetchEager, ObjectFactory<SqlSession> factory) {
+		this.factory = factory;
+
 		this.entity = entity;
 		this.field = field;
 		this.field.setAccessible(true);
@@ -130,7 +140,7 @@ public class FieldCondition<T> {
 			this.refTableId = tidConditionRef.getTableId();
 			this.fieldOfRefTableId = tidConditionRef.getFieldOfTableId();
 		}
-		
+
 		this.mapperClass = null;
 		if (entityMapper != null && entityMapper.targetMapper() != void.class) {
 			mapperClass = entityMapper.targetMapper();
@@ -149,7 +159,19 @@ public class FieldCondition<T> {
 			try {
 				mapperClass = Class.forName(className.toString());
 			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
+				String entityName = this.getFieldClass().getSimpleName();
+				Collection<Class<?>> mappers = factory.getObject().getConfiguration().getMapperRegistry().getMappers();
+				for (Class<?> mapperClz : mappers) {
+					String mapperClassName = mapperClz.getSimpleName();
+					if (mapperClassName.equalsIgnoreCase(entityName + "Mapper")) {
+						mapperClass = mapperClz;
+						break;
+					}
+				}
+				
+				if(mapperClass==null) {
+					
+				}
 			}
 		}
 
@@ -191,7 +213,31 @@ public class FieldCondition<T> {
 				try {
 					joinTableMapperClass = Class.forName(className.toString());
 				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
+					String entityName = entity.getClass().getSimpleName() + this.getFieldClass().getSimpleName();
+					Collection<Class<?>> mappers = factory.getObject().getConfiguration().getMapperRegistry().getMappers();
+					for (Class<?> mapperClz : mappers) {
+						String mapperClassName = mapperClz.getSimpleName();
+						if (mapperClassName.equalsIgnoreCase(entityName + "Mapper")) {
+							joinTableMapperClass = mapperClz;
+							break;
+						}
+					}
+					
+					if(joinTableMapperClass==null) {
+						entityName =  this.getFieldClass().getSimpleName() + entity.getClass().getSimpleName();
+						for (Class<?> mapperClz : mappers) {
+							String mapperClassName = mapperClz.getSimpleName();
+							if (mapperClassName.equalsIgnoreCase(entityName + "Mapper")) {
+								joinTableMapperClass = mapperClz;
+								break;
+							}
+						}
+					}
+					
+					if(joinTableMapperClass==null) {
+						
+					}
+					
 				}
 			}
 		}
