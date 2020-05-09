@@ -29,6 +29,7 @@ import com.github.dreamyoung.mprelation.FieldCondition.FieldCollectionType;
 public abstract class AbstractAutoMapper {
 	@Autowired
 	ObjectFactory<SqlSession> factory;
+	
 
 	protected Map<String, String[]> entityMap = new HashMap<String, String[]>();
 
