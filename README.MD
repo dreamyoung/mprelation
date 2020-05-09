@@ -58,20 +58,22 @@ POM引用 ：
 
 缺点：
 
-       目前只针对SqlSession/Mappe形式有效（ActiveRecord形式暂未修改）
+       目前只针对SqlSession/Mappe形式有效（ActiveRecord形式暂未涉及修改，也没有测试）
 
 
-       非事务下，无法做到 1个连接每次执行多条SQL，只能 多个连接每次执行1条。（即事务范围外，被加载的每个关联属性都会消耗一个连接：Creating a new SqlSession）。可通过配置事务解决。
-
+              非事务下， 1个连接（1个SqlSession）只执行一条SQL，而自动获取每个关联属性的sql都会创建1~2个SqlSession（并执行1~2条SQL)。 可通过配置事务，让所有关联属性都使用同一个SqlSession（此时非延迟加载的关联属性无论有多少都可以同在一个事务一个SqlSession中执行，而每个延迟加载的关联属性，在自动触发时还会创建一次SqlSession，但可以配置为非自动触发---即实体类上标注@AutoLazy(false)或没有标注该注解（默认），之后通过initialize方法在事务范围内的一个SqlSession中同时加载多个延迟加载的属性。）
  
 
 使用注意点：
 
        非ServiceImpl内置的业务查询，配置事务管理，减少SqlSession的创建。
 
-       通过配置适当@Lazy(true) 注解来减少关联调用。
+       实体上可用注解@AutoLazy(true)来标注是否自动触发延迟加载（true的话则
 
-       使用ServiceImpl 或  AutoMapper 相关的initialize方法，可以在事务范围内手动即时加载被@Lazy(true)注解的关联属性。
+       如果可以，不使用延迟加载（延迟加载的使用是在SqlSession关闭后执行的，需要重新创建SqlSession）。
+
+       如果确实需要延迟加载，可使用ServiceImpl 或  AutoMapper 相关的initialize方法一次性加载所有需要的被延迟的属性(只需要创建额外的一个SqlSession）
+
 
  
 
@@ -330,9 +332,6 @@ public class Man {
  
 
 3.   在Service层、Mapper层的使用，见下面：
-
- 
-
 以下是基于Mybatis-Plus官方示例修改而来的测试程序： 
 
  通过继承工具类重写过的IService /  ServiceImpl   会自动执行关联映射, 无须再写gettLinkById之类的方法（可以使得各实现类没有任何方法）：
@@ -413,7 +412,11 @@ AutoMapper类中的几个常用方法说明：
        mapperEntityPage(entity_page)                          可以对一个实体类Page，实现自动关联。
 
 
-       initialize(entity, propertynames ...)                     可以对一个实体类/实体类List/实体类Set/实体类Page，在事务范围内，手动立即触发其各个被@Lazy(true)标注的关联属性。该方法在重写过的ServiceImpl内也存在。
+	  initialize(entity/entityList/entitySet/entityPage,    OneOrMoreLazyPropertyName ...)                   
+
+                    可以对一个实体类/实体类List/实体类Set/实体类Page，在事务范围内，手动立即触发其各个被@Lazy(true)标注的关联属性。
+
+                  该方法在重写过的ServiceImpl内也存在(供Controller层调用来加载延迟关联的属性）。
 
  
 
