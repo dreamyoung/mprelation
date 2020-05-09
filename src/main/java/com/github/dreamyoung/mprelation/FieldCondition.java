@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.beans.factory.ObjectFactory;
 
 import com.baomidou.mybatisplus.annotation.TableField;
