@@ -10,12 +10,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.beans.factory.ObjectFactory;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 
-public class FieldCondition<T> {
+public class FieldCondition<T>{
 	private ObjectFactory<SqlSession> factory;
 
 	enum FieldCollectionType {
@@ -138,107 +139,66 @@ public class FieldCondition<T> {
 			this.refTableId = tidConditionRef.getTableId();
 			this.fieldOfRefTableId = tidConditionRef.getFieldOfTableId();
 		}
+		
 
 		this.mapperClass = null;
 		if (entityMapper != null && entityMapper.targetMapper() != void.class) {
 			mapperClass = entityMapper.targetMapper();
 		} else {
-			StringBuffer className = new StringBuffer();
-			String pkgName = this.getFieldClass().getName();
-			String[] pkgNamesArr = pkgName.split("\\.");
-			for (int p = 0; p < pkgNamesArr.length - 2; p++) {
-				className.append(pkgNamesArr[p]);
-				className.append(".");
+			String entityName = this.getFieldClass().getSimpleName();
+			Collection<Class<?>> mappers = this.factory.getObject().getConfiguration().getMapperRegistry().getMappers();
+			for (Class<?> mapperClz : mappers) {
+				String mapperClassName = mapperClz.getSimpleName();
+				if (mapperClassName.equalsIgnoreCase(entityName + "Mapper")) {
+					mapperClass = mapperClz;
+					break;
+				}
 			}
-			className.append("mapper.");
-			className.append(this.getFieldClass().getSimpleName());
-			className.append("Mapper");
 
-			try {
-				mapperClass = Class.forName(className.toString());
-			} catch (ClassNotFoundException e) {
-				String entityName = this.getFieldClass().getSimpleName();
-				Collection<Class<?>> mappers = this.factory.getObject().getConfiguration().getMapperRegistry().getMappers();
-				for (Class<?> mapperClz : mappers) {
-					String mapperClassName = mapperClz.getSimpleName();
-					if (mapperClassName.equalsIgnoreCase(entityName + "Mapper")) {
-						mapperClass = mapperClz;
-						break;
-					}
-				}
-				
-				if(mapperClass==null) {
-					
-				}
+			if (mapperClass == null) {
+				throw new RelationException(
+						"[Class: FieldCondition=>FieldCondition(T entity, Field field, boolean fetchEager, ObjectFactory<SqlSession> factory)],RelationException By: load Class(Mapper Interface):"
+								+ this.getFieldClass().getSimpleName() + "Mapper");
 			}
 		}
 
 		this.joinTableMapperClass = null;
+		String[] joinMapperNames = new String[] {
+				entity.getClass().getSimpleName() + this.getFieldClass().getSimpleName() + "Mapper",
+				this.getFieldClass().getSimpleName() + entity.getClass().getSimpleName() + "Mapper" };
+
 		if (joinTable != null) {
 			if (joinTable.targetMapper() != null && joinTable.targetMapper() != void.class) {
 				joinTableMapperClass = joinTable.targetMapper();
 			} else {
-				StringBuffer className = new StringBuffer();
-				String pkgName = this.getFieldClass().getName();
-				String[] pkgNamesArr = pkgName.split("\\.");
-				for (int p = 0; p < pkgNamesArr.length - 2; p++) {
-					className.append(pkgNamesArr[p]);
-					className.append(".");
-				}
-				className.append("mapper.");
-
-				if (joinTable.entityClass() != null && joinTable.entityClass() != void.class) {
-					className.append(joinTable.entityClass().getSimpleName());
-				} else {
-					String joinEntityName = null;
-					if (joinTable.name() != null && !joinTable.name().equals("")) {
-						joinEntityName = joinTable.name();
-						String[] names = joinEntityName.split("_");
-						joinEntityName = "";
-						for (int i = 0; i < names.length; i++) {
-							joinEntityName += names[i].substring(0, 1).toUpperCase();
-							joinEntityName += names[i].substring(1);
-						}
-						className.append(joinEntityName);
-					} else {
-						joinEntityName = entity.getClass().getSimpleName() + this.getFieldClass().getSimpleName();
-						className.append(joinEntityName);
+				Collection<Class<?>> mappers = this.factory.getObject().getConfiguration().getMapperRegistry()
+						.getMappers();
+				boolean isMapperFound = false;
+				for (String joinMapperName : joinMapperNames) {
+					if (isMapperFound) {
+						break;
 					}
-				}
 
-				className.append("Mapper");
-
-				try {
-					joinTableMapperClass = Class.forName(className.toString());
-				} catch (ClassNotFoundException e) {
-					String entityName = entity.getClass().getSimpleName() + this.getFieldClass().getSimpleName();
-					Collection<Class<?>> mappers = this.factory.getObject().getConfiguration().getMapperRegistry().getMappers();
 					for (Class<?> mapperClz : mappers) {
-						String mapperClassName = mapperClz.getSimpleName();
-						if (mapperClassName.equalsIgnoreCase(entityName + "Mapper")) {
+						if (mapperClz.getSimpleName().equalsIgnoreCase(joinMapperName)) {
+							isMapperFound = true;
 							joinTableMapperClass = mapperClz;
 							break;
 						}
 					}
-					
-					if(joinTableMapperClass==null) {
-						entityName =  this.getFieldClass().getSimpleName() + entity.getClass().getSimpleName();
-						for (Class<?> mapperClz : mappers) {
-							String mapperClassName = mapperClz.getSimpleName();
-							if (mapperClassName.equalsIgnoreCase(entityName + "Mapper")) {
-								joinTableMapperClass = mapperClz;
-								break;
-							}
-						}
-					}
-					
-					if(joinTableMapperClass==null) {
-						
-					}
-					
 				}
+
+				if (!isMapperFound) {
+					throw new RelationException(
+							"[Class: FieldCondition=>FieldCondition(T entity, Field field, boolean fetchEager, ObjectFactory<SqlSession> factory)],RelationException By: load Class(Mapper Interface):"
+									+ entity.getClass().getSimpleName() + this.getFieldClass().getSimpleName()
+									+ "Mapper" + " Or " + this.getFieldClass().getSimpleName()
+									+ entity.getClass().getSimpleName() + "Mapper");
+				}
+
 			}
 		}
+
 	}
 
 	public Field getField() {
@@ -369,13 +329,21 @@ public class FieldCondition<T> {
 		this.joinTable = joinTable;
 	}
 
+
 	@Override
 	public String toString() {
-		return "FieldCondition [field=" + field + ", name=" + name + ", isCollection=" + isCollection
-				+ ", fieldCollectionType=" + fieldCollectionType + ", fieldClass=" + fieldClass + ", isLazy=" + isLazy
-				+ ", tableField=" + tableField + ", oneToMany=" + oneToMany + ", oneToOne=" + oneToOne + ", manyToOne="
-				+ manyToOne + ", manyToMany=" + manyToMany + ", lazy=" + lazy + ", joinColumn=" + joinColumn
-				+ ", joinColumns=" + joinColumns + ", joinTable=" + joinTable + ", entityMapper=" + entityMapper + "]";
+		return "FieldCondition [factory=" + factory + ", entity=" + entity + ", field=" + field + ", fetchEager="
+				+ fetchEager + ", name=" + name + ", isCollection=" + isCollection + ", fieldCollectionType="
+				+ fieldCollectionType + ", relationType=" + relationType + ", fieldClass=" + fieldClass + ", isLazy="
+				+ isLazy + ", tableId=" + tableId + ", fieldOfTableId=" + fieldOfTableId + ", tableField=" + tableField
+				+ ", refTableId=" + refTableId + ", fieldOfRefTableId=" + fieldOfRefTableId + ", refTableField="
+				+ refTableField + ", inverseTableId=" + inverseTableId + ", fieldOfInverseTableId="
+				+ fieldOfInverseTableId + ", inverseTableField=" + inverseTableField + ", oneToMany=" + oneToMany
+				+ ", oneToOne=" + oneToOne + ", manyToOne=" + manyToOne + ", manyToMany=" + manyToMany + ", fetchType="
+				+ fetchType + ", lazy=" + lazy + ", joinColumn=" + joinColumn + ", joinColumns=" + joinColumns
+				+ ", joinTable=" + joinTable + ", inverseJoinColumn=" + inverseJoinColumn + ", entityMapper="
+				+ entityMapper + ", mapperClass=" + mapperClass + ", joinTableMapperClass=" + joinTableMapperClass
+				+ "]";
 	}
 
 	public TableId getTableId() {

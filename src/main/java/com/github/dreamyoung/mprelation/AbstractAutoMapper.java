@@ -30,8 +30,6 @@ public abstract class AbstractAutoMapper {
 	@Autowired
 	ObjectFactory<SqlSession> factory;
 
-	protected Log log = LogFactory.getLog(getClass());
-
 	protected Map<String, String[]> entityMap = new HashMap<String, String[]>();
 
 	public <T, E> T oneToMany(T entity) {
@@ -1160,9 +1158,10 @@ public abstract class AbstractAutoMapper {
 						columnField.setAccessible(true);
 						columnPropertyValue = (Serializable) columnField.get(entity);
 					} catch (Exception e) {
-						throw new OneToOneException("refProperty/refPropertyValue many to many id is not correct!");
+						throw new ManyToManyException("refProperty/refPropertyValue many to many id is not correct!");
 					}
 
+					
 					if (!lazy) {
 						String inverseRefColumn = InverseJoinColumnUtil.getInverseRefColumn(fc);
 						List<Serializable> idList = null;
