@@ -622,7 +622,7 @@ public abstract class AbstractAutoMapper {
 					columnField.setAccessible(true);
 					columnPropertyValue = (Serializable) columnField.get(entity);
 				} catch (Exception e) {
-					throw new OneToManyException("refProperty/refPropertyValue one to one(List) id is not correct!");
+					throw new OneToOneException("refProperty/refPropertyValue one to one(List) id is not correct!");
 				}
 
 				if (!fieldClassMap.containsKey(fieldCode)) {
@@ -823,7 +823,7 @@ public abstract class AbstractAutoMapper {
 						columnField.setAccessible(true);
 						columnPropertyValue = (Serializable) columnField.get(entity);
 					} catch (Exception e) {
-						throw new OneToOneException("refProperty/refPropertyValue many to one id is not correct!");
+						throw new ManyToOneException("refProperty/refPropertyValue many to one id is not correct!");
 					}
 
 					if (!lazy) {
@@ -957,7 +957,7 @@ public abstract class AbstractAutoMapper {
 					columnField.setAccessible(true);
 					columnPropertyValue = (Serializable) columnField.get(entity);
 				} catch (Exception e) {
-					throw new OneToManyException("refProperty/refPropertyValue many to one(List) id is not correct!");
+					throw new ManyToOneException("refProperty/refPropertyValue many to one(List) id is not correct!");
 				}
 
 				if (!fieldClassMap.containsKey(fieldCode)) {
@@ -1433,7 +1433,7 @@ public abstract class AbstractAutoMapper {
 					columnField.setAccessible(true);
 					columnPropertyValue = (Serializable) columnField.get(entity);
 				} catch (Exception e) {
-					throw new OneToManyException("refProperty/refPropertyValue many to many(List) id is not correct!");
+					throw new ManyToManyException("refProperty/refPropertyValue many to many(List) id is not correct!");
 				}
 
 				if (!isLazyMap.containsKey(fieldCode)) {
