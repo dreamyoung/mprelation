@@ -29,7 +29,6 @@ import com.github.dreamyoung.mprelation.FieldCondition.FieldCollectionType;
 public abstract class AbstractAutoMapper {
 	@Autowired
 	ObjectFactory<SqlSession> factory;
-	
 
 	protected Map<String, String[]> entityMap = new HashMap<String, String[]>();
 
@@ -83,7 +82,7 @@ public abstract class AbstractAutoMapper {
 				}
 
 				if (field.isAnnotationPresent(OneToMany.class)) {
-					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
+					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager, factory);
 					boolean lazy = false;
 					if (fc.getLazy() == null) {
 						if (fc.getOneToMany().fetch() == FetchType.LAZY) {
@@ -109,6 +108,10 @@ public abstract class AbstractAutoMapper {
 						columnPropertyValue = (Serializable) columnField.get(entity);
 					} catch (Exception e) {
 						throw new OneToManyException("refProperty/refPropertyValue one to many id is not correct!");
+					}
+
+					if (columnPropertyValue == null) {
+						continue;
 					}
 
 					if (!lazy) {
@@ -262,7 +265,7 @@ public abstract class AbstractAutoMapper {
 			for (Field field : fields) {
 				String fieldCode = field.getName();
 
-				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
+				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager, factory);
 				boolean lazy = fc.getIsLazy();
 
 				JoinColumn joinColumn = fc.getJoinColumn();
@@ -327,24 +330,31 @@ public abstract class AbstractAutoMapper {
 			String refColumn = refColumnMap.get(field.getName());
 			BaseMapper<E> mapper = mapperMap.get(field.getName());
 			FieldCollectionType fieldCollectionType = fieldCollectionTypeMap.get(field.getName());
+
 			ArrayList<Serializable> columnPropertyValueList = columnPropertyValueListMap.get(field.getName());
 			ArrayList<Serializable> idListDistinct = new ArrayList<Serializable>();
-			if (columnPropertyValueList.size() > 0) {
+			if (columnPropertyValueList != null && columnPropertyValueList.size() > 0) {
 				for (int s = 0; s < columnPropertyValueList.size(); s++) {
 					boolean isExists = false;
 					for (int ss = 0; ss < idListDistinct.size(); ss++) {
-						if (columnPropertyValueList.get(s)!=null && idListDistinct.get(ss)!=null && columnPropertyValueList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
+						if (columnPropertyValueList.get(s) != null && idListDistinct.get(ss) != null
+								&& columnPropertyValueList.get(s).toString()
+										.equals(idListDistinct.get(ss).toString())) {
 							isExists = true;
 							break;
 						}
 					}
 
-					if (columnPropertyValueList.get(s)!=null && !isExists) {
+					if (columnPropertyValueList.get(s) != null && !isExists) {
 						idListDistinct.add(columnPropertyValueList.get(s));
 					}
 				}
 			}
 			columnPropertyValueList = idListDistinct;
+
+			if (columnPropertyValueList.size() == 0) {
+				continue;
+			}
 
 			final OneToManyResult<T, E> oneToManyResult = new OneToManyResult<T, E>(fields);
 			oneToManyResult.setList(list);
@@ -359,10 +369,6 @@ public abstract class AbstractAutoMapper {
 			oneToManyResult.setRefColumnPropertyMap(refColumnPropertyMap);
 			oneToManyResult.setFields(fields);
 
-			if(columnPropertyValueList==null || columnPropertyValueList.size()==0) {
-				return list;
-			}
-			
 			if (!lazy) {
 				List<E> listAll = mapper.selectList(new QueryWrapper<E>().in(refColumn, columnPropertyValueList));
 
@@ -461,7 +467,7 @@ public abstract class AbstractAutoMapper {
 					continue;
 				}
 				if (field.isAnnotationPresent(OneToOne.class)) {
-					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
+					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager, factory);
 					boolean lazy = false;
 					if (fc.getLazy() == null) {
 						if (fc.getOneToOne().fetch() == FetchType.LAZY) {
@@ -487,6 +493,10 @@ public abstract class AbstractAutoMapper {
 						columnPropertyValue = (Serializable) columnField.get(entity);
 					} catch (Exception e) {
 						throw new OneToOneException("refProperty/refPropertyValue one to one id is not correct!");
+					}
+
+					if (columnPropertyValue == null) {
+						continue;
 					}
 
 					if (!lazy) {
@@ -608,7 +618,7 @@ public abstract class AbstractAutoMapper {
 			for (Field field : fields) {
 				String fieldCode = field.getName();
 
-				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
+				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager, factory);
 				boolean lazy = fc.getIsLazy();
 
 				JoinColumn joinColumn = fc.getJoinColumn();
@@ -676,9 +686,10 @@ public abstract class AbstractAutoMapper {
 			String refColumn = refColumnMap.get(field.getName());
 			BaseMapper<E> mapper = mapperMap.get(field.getName());
 			FieldCollectionType fieldCollectionType = fieldCollectionTypeMap.get(field.getName());
+
 			ArrayList<Serializable> columnPropertyValueList = columnPropertyValueListMap.get(field.getName());
 			ArrayList<Serializable> idListDistinct = new ArrayList<Serializable>();
-			if (columnPropertyValueList.size() > 0) {
+			if (columnPropertyValueList != null && columnPropertyValueList.size() > 0) {
 				for (int s = 0; s < columnPropertyValueList.size(); s++) {
 					boolean isExists = false;
 					for (int ss = 0; ss < idListDistinct.size(); ss++) {
@@ -697,6 +708,10 @@ public abstract class AbstractAutoMapper {
 			}
 			columnPropertyValueList = idListDistinct;
 
+			if (columnPropertyValueList.size() == 0) {
+				continue;
+			}
+
 			final OneToOneResult<T, E> oneToOneResult = new OneToOneResult<T, E>(fields);
 			oneToOneResult.setList(list);
 			oneToOneResult.setFieldClass(fieldClass);
@@ -710,10 +725,6 @@ public abstract class AbstractAutoMapper {
 			oneToOneResult.setRefColumnPropertyMap(refColumnPropertyMap);
 			oneToOneResult.setFields(fields);
 
-			if(columnPropertyValueList==null || columnPropertyValueList.size()==0) {
-				return list;
-			}
-			
 			if (!lazy) {
 
 				List<E> listAll = null;
@@ -799,7 +810,7 @@ public abstract class AbstractAutoMapper {
 					continue;
 				}
 				if (field.isAnnotationPresent(ManyToOne.class)) {
-					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
+					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager, factory);
 					boolean lazy = false;
 					if (fc.getLazy() == null) {
 						if (fc.getManyToOne().fetch() == FetchType.LAZY) {
@@ -825,6 +836,10 @@ public abstract class AbstractAutoMapper {
 						columnPropertyValue = (Serializable) columnField.get(entity);
 					} catch (Exception e) {
 						throw new ManyToOneException("refProperty/refPropertyValue many to one id is not correct!");
+					}
+
+					if (columnPropertyValue == null) {
+						continue;
 					}
 
 					if (!lazy) {
@@ -943,7 +958,7 @@ public abstract class AbstractAutoMapper {
 			for (Field field : fields) {
 				String fieldCode = field.getName();
 
-				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
+				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager, factory);
 				boolean lazy = fc.getIsLazy();
 
 				JoinColumn joinColumn = fc.getJoinColumn();
@@ -1011,9 +1026,10 @@ public abstract class AbstractAutoMapper {
 			String refColumn = refColumnMap.get(field.getName());
 			BaseMapper<E> mapper = mapperMap.get(field.getName());
 			FieldCollectionType fieldCollectionType = fieldCollectionTypeMap.get(field.getName());
+
 			ArrayList<Serializable> columnPropertyValueList = columnPropertyValueListMap.get(field.getName());
 			ArrayList<Serializable> idListDistinct = new ArrayList<Serializable>();
-			if (columnPropertyValueList.size() > 0) {
+			if (columnPropertyValueList != null && columnPropertyValueList.size() > 0) {
 				for (int s = 0; s < columnPropertyValueList.size(); s++) {
 					boolean isExists = false;
 					for (int ss = 0; ss < idListDistinct.size(); ss++) {
@@ -1032,6 +1048,10 @@ public abstract class AbstractAutoMapper {
 			}
 			columnPropertyValueList = idListDistinct;
 
+			if (columnPropertyValueList.size() == 0) {
+				continue;
+			}
+
 			final ManyToOneResult<T, E> manyToOneResult = new ManyToOneResult<T, E>(fields);
 			manyToOneResult.setList(list);
 			manyToOneResult.setFieldClass(fieldClass);
@@ -1045,10 +1065,6 @@ public abstract class AbstractAutoMapper {
 			manyToOneResult.setRefColumnPropertyMap(refColumnPropertyMap);
 			manyToOneResult.setFields(fields);
 
-			if(columnPropertyValueList==null || columnPropertyValueList.size()==0) {
-				return list;
-			}
-			
 			if (!lazy) {
 
 				List<E> listAll = null;
@@ -1134,7 +1150,7 @@ public abstract class AbstractAutoMapper {
 					continue;
 				}
 				if (field.isAnnotationPresent(ManyToMany.class)) {
-					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
+					FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager, factory);
 					boolean lazy = false;
 					if (fc.getLazy() == null) {
 						if (fc.getManyToMany().fetch() == FetchType.LAZY) {
@@ -1162,7 +1178,10 @@ public abstract class AbstractAutoMapper {
 						throw new ManyToManyException("refProperty/refPropertyValue many to many id is not correct!");
 					}
 
-					
+					if (columnPropertyValue == null) {
+						continue;
+					}
+
 					if (!lazy) {
 						String inverseRefColumn = InverseJoinColumnUtil.getInverseRefColumn(fc);
 						List<Serializable> idList = null;
@@ -1182,7 +1201,8 @@ public abstract class AbstractAutoMapper {
 							for (int s = 0; s < idList.size(); s++) {
 								boolean isExists = false;
 								for (int ss = 0; ss < idListDistinct.size(); ss++) {
-									if (idList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
+									if (idList.get(s) != null && idListDistinct.get(ss) != null
+											&& idList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
 										isExists = true;
 										break;
 									}
@@ -1194,6 +1214,10 @@ public abstract class AbstractAutoMapper {
 							}
 						}
 						idList = idListDistinct;
+
+						if (idList.size() == 0) {
+							continue;
+						}
 
 						Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 						Class<?> mapperClass = fc.getMapperClass();
@@ -1239,8 +1263,8 @@ public abstract class AbstractAutoMapper {
 										for (int s = 0; s < idList.size(); s++) {
 											boolean isExists = false;
 											for (int ss = 0; ss < idListDistinct.size(); ss++) {
-												if (idList.get(s).toString()
-														.equals(idListDistinct.get(ss).toString())) {
+												if (idList.get(s) != null && idListDistinct.get(ss) != null && idList
+														.get(s).toString().equals(idListDistinct.get(ss).toString())) {
 													isExists = true;
 													break;
 												}
@@ -1252,6 +1276,10 @@ public abstract class AbstractAutoMapper {
 										}
 									}
 									idList = idListDistinct;
+
+									if (idList.size() == 0) {
+										return new HashSet<E>();
+									}
 
 									Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 									Class<?> mapperClass = fc.getMapperClass();
@@ -1299,8 +1327,8 @@ public abstract class AbstractAutoMapper {
 										for (int s = 0; s < idList.size(); s++) {
 											boolean isExists = false;
 											for (int ss = 0; ss < idListDistinct.size(); ss++) {
-												if (idList.get(s).toString()
-														.equals(idListDistinct.get(ss).toString())) {
+												if (idList.get(s) != null && idListDistinct.get(ss) != null && idList
+														.get(s).toString().equals(idListDistinct.get(ss).toString())) {
 													isExists = true;
 													break;
 												}
@@ -1312,6 +1340,9 @@ public abstract class AbstractAutoMapper {
 										}
 									}
 									idList = idListDistinct;
+									if (idList.size() == 0) {
+										return new ArrayList<E>();
+									}
 
 									Class<E> entityClass2 = (Class<E>) fc.getFieldClass();
 									Class<?> mapperClass = fc.getMapperClass();
@@ -1418,7 +1449,7 @@ public abstract class AbstractAutoMapper {
 			for (Field field : fields) {
 				String fieldCode = field.getName();
 
-				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager,factory);
+				FieldCondition<T> fc = new FieldCondition<T>(entity, field, fetchEager, factory);
 				boolean lazy = fc.getIsLazy();
 
 				JoinColumn joinColumn = fc.getJoinColumn();
@@ -1510,7 +1541,31 @@ public abstract class AbstractAutoMapper {
 			String refColumn = refColumnMap.get(field.getName());
 			BaseMapper<E> mapper = mapperMap.get(field.getName());
 			FieldCollectionType fieldCollectionType = fieldCollectionTypeMap.get(field.getName());
+
 			ArrayList<Serializable> columnPropertyValueList = columnPropertyValueListMap.get(field.getName());
+			ArrayList<Serializable> idListDistinct = new ArrayList<Serializable>();
+			if (columnPropertyValueList != null && columnPropertyValueList.size() > 0) {
+				for (int s = 0; s < columnPropertyValueList.size(); s++) {
+					boolean isExists = false;
+					for (int ss = 0; ss < idListDistinct.size(); ss++) {
+						if (columnPropertyValueList.get(s) != null && idListDistinct.get(ss) != null
+								&& columnPropertyValueList.get(s).toString()
+										.equals(idListDistinct.get(ss).toString())) {
+							isExists = true;
+							break;
+						}
+					}
+
+					if (columnPropertyValueList.get(s) != null && !isExists) {
+						idListDistinct.add(columnPropertyValueList.get(s));
+					}
+				}
+			}
+			columnPropertyValueList = idListDistinct;
+
+			if (columnPropertyValueList.size() == 0) {
+				continue;
+			}
 
 			String refColumnProperty = refColumnPropertyMap.get(field.getName());
 			String inverseRefColumn = inverseRefColumnMap.get(field.getName());
@@ -1537,10 +1592,6 @@ public abstract class AbstractAutoMapper {
 			manyToManyResult.setInverseRefColumnPropertyMap(inverseRefColumnPropertyMap);
 			Map<String, List<X>> entityXListMap = new HashMap<String, List<X>>();
 
-			if(columnPropertyValueList==null || columnPropertyValueList.size()==0) {
-				return list;
-			}
-			
 			if (!lazy) {
 				// get list from join table 3
 				List<X> entityXList = mapperX.selectList(new QueryWrapper<X>().in(refColumn, columnPropertyValueList));
@@ -1552,14 +1603,19 @@ public abstract class AbstractAutoMapper {
 					}
 				}
 
+				if (entityXList == null || entityXList.size() == 0) {
+					continue;
+				}
+
 				ArrayList<Serializable> idList = new ArrayList<Serializable>();
+
 				for (int ii = 0; ii < entityXList.size(); ii++) {
 					X entityX = entityXList.get(ii);
 					try {
 						Field fieldX = entityX.getClass().getDeclaredField(inverseRefColumnProperty);
 						fieldX.setAccessible(true);
 						Serializable id = (Serializable) fieldX.get(entityX);
-						if (!idList.contains(id)) {
+						if (id != null && !idList.contains(id)) {
 							idList.add(id);
 						}
 					} catch (Exception e1) {
@@ -1567,24 +1623,28 @@ public abstract class AbstractAutoMapper {
 					}
 
 				}
-				ArrayList<Serializable> idListDistinct = new ArrayList<Serializable>();
+				ArrayList<Serializable> idListDistinct2 = new ArrayList<Serializable>();
 				if (idList.size() > 0) {
 					for (int s = 0; s < idList.size(); s++) {
 						boolean isExists = false;
-						for (int ss = 0; ss < idListDistinct.size(); ss++) {
-							if (idList.get(s)!=null && idListDistinct.get(ss)!=null && idList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
+						for (int ss = 0; ss < idListDistinct2.size(); ss++) {
+							if (idList.get(s) != null && idListDistinct2.get(ss) != null
+									&& idList.get(s).toString().equals(idListDistinct2.get(ss).toString())) {
 								isExists = true;
 								break;
 							}
 						}
 
-						if (idList.get(s)!=null && !isExists) {
-							idListDistinct.add(idList.get(s));
+						if (idList.get(s) != null && !isExists) {
+							idListDistinct2.add(idList.get(s));
 						}
 					}
 				}
-				idList = idListDistinct;
-				columnPropertyValueList = idList;
+				columnPropertyValueList = idListDistinct2;
+
+				if (columnPropertyValueList.size() == 0) {
+					continue;
+				}
 
 				List<E> listAll = mapper
 						.selectList(new QueryWrapper<E>().in(inverseRefColumn, columnPropertyValueList));

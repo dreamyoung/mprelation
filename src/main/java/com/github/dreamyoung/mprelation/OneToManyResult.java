@@ -86,7 +86,7 @@ public class OneToManyResult<T, E> {
 						entity2Field.setAccessible(true);
 						Object refCoumnValue = entity2Field.get(entityE);
 
-						if (columnValue.toString().equals(refCoumnValue.toString())) {
+						if (columnValue!=null && refCoumnValue!=null && columnValue.toString().equals(refCoumnValue.toString())) {
 							listForThisEntity.add(entityE);
 						}
 					} catch (Exception e1) {
@@ -111,29 +111,6 @@ public class OneToManyResult<T, E> {
 
 	public void handleLazy(Field field) {
 		final BaseMapper<E> mapper = (BaseMapper<E>) this.mapperE;
-
-		ArrayList<Serializable> idListDistinct = new ArrayList<Serializable>();
-		if (columnPropertyValueList.size() > 0) {
-			for (int s = 0; s < columnPropertyValueList.size(); s++) {
-				boolean isExists = false;
-				for (int ss = 0; ss < idListDistinct.size(); ss++) {
-					if (columnPropertyValueList.get(s) != null && idListDistinct.get(ss) != null
-							&& columnPropertyValueList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
-						isExists = true;
-						break;
-					}
-				}
-
-				if (columnPropertyValueList.get(s) != null && !isExists) {
-					idListDistinct.add(columnPropertyValueList.get(s));
-				}
-			}
-		}
-		columnPropertyValueList = idListDistinct;
-
-		if (columnPropertyValueList == null || columnPropertyValueList.size() == 0) {
-			return;
-		}
 
 		if (fieldCollectionType == FieldCollectionType.SET) {
 			for (int i = 0; i < this.list.size(); i++) {
@@ -177,7 +154,7 @@ public class OneToManyResult<T, E> {
 								entity2Field.setAccessible(true);
 								Object refCoumnValue = entity2Field.get(entityE);
 
-								if (columnValue != null && columnValue.toString().equals(refCoumnValue.toString())) {
+								if (columnValue != null && refCoumnValue!=null && columnValue.toString().equals(refCoumnValue.toString())) {
 									listForThisEntity.add(entityE);
 								}
 							} catch (Exception e1) {
@@ -240,7 +217,7 @@ public class OneToManyResult<T, E> {
 								entity2Field.setAccessible(true);
 								Object refCoumnValue = entity2Field.get(entityE);
 
-								if (columnValue != null && columnValue.toString().equals(refCoumnValue.toString())) {
+								if (columnValue != null && refCoumnValue!=null && columnValue.toString().equals(refCoumnValue.toString())) {
 									listForThisEntity.add(entityE);
 								}
 							} catch (Exception e1) {

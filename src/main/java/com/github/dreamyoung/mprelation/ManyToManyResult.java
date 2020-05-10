@@ -111,7 +111,8 @@ public class ManyToManyResult<T, E, X> {
 							entityXField2.setAccessible(true);
 							Object refColumnValueX = entityXField2.get(entityX);
 
-							if (columnValueX.toString().equals(columnValue.toString())
+							if (columnValueX != null && columnValue != null && refColumnValueX != null
+									&& refCoumnValue != null && columnValueX.toString().equals(columnValue.toString())
 									&& refColumnValueX.toString().equals(refCoumnValue.toString())) {
 								listForThisEntity.add(entityE);
 							}
@@ -138,29 +139,6 @@ public class ManyToManyResult<T, E, X> {
 		final BaseMapper<E> mapper = (BaseMapper<E>) this.mapperE;
 		Map<String, List<X>> entityXListMap = new HashMap<String, List<X>>();
 
-		ArrayList<Serializable> idListDistinct = new ArrayList<Serializable>();
-		if (columnPropertyValueList.size() > 0) {
-			for (int s = 0; s < columnPropertyValueList.size(); s++) {
-				boolean isExists = false;
-				for (int ss = 0; ss < idListDistinct.size(); ss++) {
-					if (columnPropertyValueList.get(s) != null && idListDistinct.get(ss) != null
-							&& columnPropertyValueList.get(s).toString().equals(idListDistinct.get(ss).toString())) {
-						isExists = true;
-						break;
-					}
-				}
-
-				if (columnPropertyValueList.get(s) != null && !isExists) {
-					idListDistinct.add(columnPropertyValueList.get(s));
-				}
-			}
-		}
-		columnPropertyValueList = idListDistinct;
-
-		if (columnPropertyValueList == null || columnPropertyValueList.size() == 0) {
-			return;
-		}
-
 		if (fieldCollectionType == FieldCollectionType.SET) {
 
 			for (int i = 0; i < this.list.size(); i++) {
@@ -183,11 +161,12 @@ public class ManyToManyResult<T, E, X> {
 							isExeSqlMap.put(field.getName(), true);
 
 							if (columnPropertyValueList.size() == 1) {
-								entityXList = mapperX.selectList(
-										new QueryWrapper<X>().select("DISTINCT "+inverseRefColumn).eq(refColumn, columnPropertyValueList.get(0)));
-							} else {
 								entityXList = mapperX
-										.selectList(new QueryWrapper<X>().select("DISTINCT "+inverseRefColumn).in(refColumn, columnPropertyValueList));
+										.selectList(new QueryWrapper<X>().select("DISTINCT " + inverseRefColumn)
+												.eq(refColumn, columnPropertyValueList.get(0)));
+							} else {
+								entityXList = mapperX.selectList(new QueryWrapper<X>()
+										.select("DISTINCT " + inverseRefColumn).in(refColumn, columnPropertyValueList));
 							}
 
 							if (!entityXListMap.containsKey(fieldCode)) {
@@ -201,7 +180,7 @@ public class ManyToManyResult<T, E, X> {
 									Field fieldX = entityX.getClass().getDeclaredField(inverseRefColumnProperty);
 									fieldX.setAccessible(true);
 									Serializable id = (Serializable) fieldX.get(entityX);
-									if (!idList.contains(id)) {
+									if (id != null && !idList.contains(id)) {
 										idList.add(id);
 									}
 								} catch (Exception e1) {
@@ -231,12 +210,16 @@ public class ManyToManyResult<T, E, X> {
 							if (idList.size() == 1) {
 								collectionMap.put(field.getName(),
 										mapper.selectList(new QueryWrapper<E>().eq(inverseRefColumn, idList.get(0))));
-							} else {
+							} else if (idList.size() > 1) {
 								collectionMap.put(field.getName(), mapper.selectList(
 										new QueryWrapper<E>().in(inverseRefColumn, (ArrayList<Serializable>) idList)));
 							}
 
 							isExeSqlMap.put(field.getName(), true);
+
+							if (idList.size() == 0) {
+								return new HashSet<E>();
+							}
 
 						}
 
@@ -330,11 +313,12 @@ public class ManyToManyResult<T, E, X> {
 							isExeSqlMap.put(field.getName(), true);
 
 							if (columnPropertyValueList.size() == 1) {
-								entityXList = mapperX.selectList(
-										new QueryWrapper<X>().select("DISTINCT "+inverseRefColumn).eq(refColumn, columnPropertyValueList.get(0)));
-							} else {
 								entityXList = mapperX
-										.selectList(new QueryWrapper<X>().select("DISTINCT "+inverseRefColumn).in(refColumn, columnPropertyValueList));
+										.selectList(new QueryWrapper<X>().select("DISTINCT " + inverseRefColumn)
+												.eq(refColumn, columnPropertyValueList.get(0)));
+							} else {
+								entityXList = mapperX.selectList(new QueryWrapper<X>()
+										.select("DISTINCT " + inverseRefColumn).in(refColumn, columnPropertyValueList));
 							}
 							if (!entityXListMap.containsKey(fieldCode)) {
 								entityXListMap.put(fieldCode, entityXList);
@@ -347,7 +331,7 @@ public class ManyToManyResult<T, E, X> {
 									Field fieldX = entityX.getClass().getDeclaredField(inverseRefColumnProperty);
 									fieldX.setAccessible(true);
 									Serializable id = (Serializable) fieldX.get(entityX);
-									if (!idList.contains(id)) {
+									if (id != null && !idList.contains(id)) {
 										idList.add(id);
 									}
 								} catch (Exception e1) {
@@ -377,12 +361,16 @@ public class ManyToManyResult<T, E, X> {
 							if (idList.size() == 1) {
 								collectionMap.put(field.getName(),
 										mapper.selectList(new QueryWrapper<E>().eq(inverseRefColumn, idList.get(0))));
-							} else {
+							} else if (idList.size() > 1) {
 								collectionMap.put(field.getName(), mapper.selectList(
 										new QueryWrapper<E>().in(inverseRefColumn, (ArrayList<Serializable>) idList)));
 							}
 
 							isExeSqlMap.put(field.getName(), true);
+
+							if (idList.size() == 0) {
+								return new ArrayList<E>();
+							}
 
 						}
 
