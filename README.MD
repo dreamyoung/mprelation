@@ -264,7 +264,7 @@ public class StudentCourse {
 
 使用过程：   
 
-1.   加入 mprelation-0.0.3-RELEASE.jar， 配置 AutoMapper 
+1.   POM中引入mprelation， 并配置 AutoMapper （只要是扫描被注解的实体类）
 
 
 
@@ -272,7 +272,7 @@ public class StudentCourse {
 public class AutoMapperConfig {
     @Bean
     public AutoMapper autoMapper() {
-        return new AutoMapper(new String[] { "demo.entity" }); //配置实体类所在目录（可多个）
+        return new AutoMapper(new String[] { "demo.entity","demo.bean" }); //配置实体类所在目录（可多个,暂时不支持通过符*号配置）
     }
 }
 
