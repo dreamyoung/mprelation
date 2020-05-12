@@ -35,7 +35,7 @@ POM引用 ：
 <dependency>
      <groupId>com.github.dreamyoung</groupId>
      <artifactId>mprelation</artifactId>
-     <version>0.0.3-RELEASE</version> 
+     <version>0.0.3.1-RELEASE</version> 
 </dependency>
 
  
