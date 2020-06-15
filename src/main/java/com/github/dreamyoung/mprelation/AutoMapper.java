@@ -1,15 +1,20 @@
 package com.github.dreamyoung.mprelation;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,8 +38,6 @@ public class AutoMapper extends AbstractAutoMapper {
 
 		if (entityPackages != null && entityPackages.length > 0) {
 			ClassLoader loader = Thread.currentThread().getContextClassLoader();
-			Class<?> clazz = null;
-			String className = null;
 			for (int i = 0; i < entityPackages.length; i++) {
 				String entityPackage = entityPackages[i];
 				String packagePath = entityPackage.replace(".", "/");
@@ -48,70 +51,44 @@ public class AutoMapper extends AbstractAutoMapper {
 						for (File childFile : files) {
 							String fileName = childFile.getName();
 							if (fileName.endsWith(".class") && !fileName.contains("$")) {
-								className = entityPackage + "." + fileName.substring(0, fileName.length() - 6);
+								String className = entityPackage + "." + fileName.substring(0, fileName.length() - 6);
 
-								ArrayList<String> oneToOneFields = new ArrayList<>();
-								ArrayList<String> oneToManyFields = new ArrayList<>();
-								ArrayList<String> manyToOneFields = new ArrayList<>();
-								ArrayList<String> manyToManyFields = new ArrayList<>();
-
-								try {
-									clazz = Class.forName(className);
-
-									Field[] fields = clazz.getDeclaredFields();
-									if (fields != null && fields.length > 0) {
-										for (int j = 0; j < fields.length; j++) {
-											Field field = fields[j];
-
-											OneToOne oneToOne = field.getAnnotation(OneToOne.class);
-											if (oneToOne != null) {
-												oneToOneFields.add(field.getName());
-											}
-
-											OneToMany oneToMany = field.getAnnotation(OneToMany.class);
-											if (oneToMany != null) {
-												oneToManyFields.add(field.getName());
-											}
-
-											ManyToOne manyToOne = field.getAnnotation(ManyToOne.class);
-											if (manyToOne != null) {
-												manyToOneFields.add(field.getName());
-											}
-
-											ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
-											if (manyToMany != null) {
-												manyToManyFields.add(field.getName());
-											}
-
-										}
-
-										if (oneToOneFields.size() > 0) {
-											entityMap.put(clazz.getName() + "." + RelationType.ONETOONE.name(),
-													oneToOneFields.toArray(new String[] {}));
-										}
-
-										if (oneToManyFields.size() > 0) {
-											entityMap.put(clazz.getName() + "." + RelationType.ONETOMANY.name(),
-													oneToManyFields.toArray(new String[] {}));
-										}
-										if (manyToOneFields.size() > 0) {
-											entityMap.put(clazz.getName() + "." + RelationType.MANYTOONE.name(),
-													manyToOneFields.toArray(new String[] {}));
-										}
-										if (manyToManyFields.size() > 0) {
-											entityMap.put(clazz.getName() + "." + RelationType.MANYTOMANY.name(),
-													manyToManyFields.toArray(new String[] {}));
-										}
-
-									}
-
-								} catch (ClassNotFoundException e) {
-									e.printStackTrace();
-									throw new AutoMapperException("Error in scan entity bean");
-								}
+								autoMapperBean(className);
 
 							}
 						}
+					} else if(protocol.equals("jar")){//JAR
+						JarURLConnection jarURLConnection = null;
+						try {
+							jarURLConnection = (JarURLConnection) url.openConnection();
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+                        if (jarURLConnection != null) {
+                            JarFile jarFile = null;
+							try {
+								jarFile = jarURLConnection.getJarFile();//only get "XXX.jar!/BOOT-INF/classes" ??
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							
+                            if (jarFile != null) {
+                                Enumeration<JarEntry> jarEntries = jarFile.entries();
+                                while (jarEntries.hasMoreElements()) {
+                                    JarEntry jarEntry = jarEntries.nextElement();
+                                    String jarEntryName = jarEntry.getName();
+                                    if (jarEntryName.startsWith(packagePath) && jarEntryName.endsWith(".class")) {
+                                        String className = jarEntryName.substring(0, jarEntryName.lastIndexOf(".")).replaceAll("/", ".");
+                                        
+                                        autoMapperBean(className);
+                                        
+                                    }
+                                }
+                            }
+                        }
+                        
 					}
 				}
 
@@ -120,6 +97,69 @@ public class AutoMapper extends AbstractAutoMapper {
 	}
 
 
+	private void autoMapperBean(String className) {
+		Class<?> clazz = null;
+		
+		ArrayList<String> oneToOneFields = new ArrayList<>();
+		ArrayList<String> oneToManyFields = new ArrayList<>();
+		ArrayList<String> manyToOneFields = new ArrayList<>();
+		ArrayList<String> manyToManyFields = new ArrayList<>();
+
+		try {
+			clazz = Class.forName(className);
+
+			Field[] fields = clazz.getDeclaredFields();
+			if (fields != null && fields.length > 0) {
+				for (int j = 0; j < fields.length; j++) {
+					Field field = fields[j];
+
+					OneToOne oneToOne = field.getAnnotation(OneToOne.class);
+					if (oneToOne != null) {
+						oneToOneFields.add(field.getName());
+					}
+
+					OneToMany oneToMany = field.getAnnotation(OneToMany.class);
+					if (oneToMany != null) {
+						oneToManyFields.add(field.getName());
+					}
+
+					ManyToOne manyToOne = field.getAnnotation(ManyToOne.class);
+					if (manyToOne != null) {
+						manyToOneFields.add(field.getName());
+					}
+
+					ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+					if (manyToMany != null) {
+						manyToManyFields.add(field.getName());
+					}
+
+				}
+
+				if (oneToOneFields.size() > 0) {
+					entityMap.put(clazz.getName() + "." + RelationType.ONETOONE.name(),
+							oneToOneFields.toArray(new String[] {}));
+				}
+
+				if (oneToManyFields.size() > 0) {
+					entityMap.put(clazz.getName() + "." + RelationType.ONETOMANY.name(),
+							oneToManyFields.toArray(new String[] {}));
+				}
+				if (manyToOneFields.size() > 0) {
+					entityMap.put(clazz.getName() + "." + RelationType.MANYTOONE.name(),
+							manyToOneFields.toArray(new String[] {}));
+				}
+				if (manyToManyFields.size() > 0) {
+					entityMap.put(clazz.getName() + "." + RelationType.MANYTOMANY.name(),
+							manyToManyFields.toArray(new String[] {}));
+				}
+
+			}
+
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			throw new AutoMapperException("Error in scan entity bean");
+		}
+	}
 
 	/**
 	 * an entity auto related
