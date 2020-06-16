@@ -35,7 +35,7 @@ POM引用 ：
 <dependency>
      <groupId>com.github.dreamyoung</groupId>
      <artifactId>mprelation</artifactId>
-     <version>0.0.3.1-RELEASE</version> 
+     <version>0.0.3.2-RELEASE</version> 
 </dependency>
 
  
@@ -60,9 +60,10 @@ POM引用 ：
 
        目前只针对SqlSession/Mappe形式有效（ActiveRecord形式暂未涉及修改，也没有测试）
 
+       非事务下， 1个连接（1个SqlSession）只执行一条SQL，而自动获取每个关联属性的sql都会创建1~2个SqlSession（并执行1~2条SQL)。如果需要使用非内置方法（即除ServiceImpl外的方法）,必须配置只读事务来减少SqlSession创建。
 
-              非事务下， 1个连接（1个SqlSession）只执行一条SQL，而自动获取每个关联属性的sql都会创建1~2个SqlSession（并执行1~2条SQL)。 可通过配置事务，让所有关联属性都使用同一个SqlSession（此时非延迟加载的关联属性无论有多少都可以同在一个事务一个SqlSession中执行，而每个延迟加载的关联属性，在自动触发时还会创建一次SqlSession，但可以配置为非自动触发---即实体类上标注@AutoLazy(false)或没有标注该注解（默认），之后通过initialize方法在事务范围内的一个SqlSession中同时加载多个延迟加载的属性。）
- 
+       如果有多个延迟加载的关联属性，类上可注解@AutoLazy(false)或没有标注该注解（默认），之后通过initialize方法在事务范围内的一个SqlSession中同时加载需要的多个延迟加载的属性。
+
 
 使用注意点：
 
@@ -229,7 +230,8 @@ public class Child {
     @ManyToMany
     @JoinTable(targetMapper=StudentCourseMapper.class)
     @JoinColumn(name = "child_id", referencedColumnName = "student_id")
-    @InverseJoinColumn(name = "course_id", referencedColumnName = "course_id")private List<Course> courses;
+    @InverseJoinColumn(name = "course_id", referencedColumnName = "course_id")
+    private List<Course> courses;
 }
 
 
@@ -287,7 +289,7 @@ public class AutoMapperConfig {
 
 
 @Data
-@AutoLazy  //对标注了@Lazy(true)的延迟关联属性启动自动触发加载，否则须以手动触发加载（如initialize等方法）
+@AutoLazy  //不需要手动触发加载延迟属性，当延迟属性被调用时自动创建Session进行获取。可见如果有多个延迟属性需要被使用时，会造成多次创建Session，此时可以标注为AutoLazy(false)或不标注，然后采用initialze方法手动一次性加载需要的属性
 public class Man { 
     @TableId(value = "man_id")
     private Long id;
@@ -298,7 +300,6 @@ public class Man {
 
     @TableField(exist = false)
     @OneToOne
-    @Lazy(true)
     @JoinColumn(name = "lao_po_id", referencedColumnName = "woman_id")
     private Woman laoPo;
 
@@ -308,12 +309,13 @@ public class Man {
     @TableField(exist = false)
     @ManyToOne
     @JoinColumn(name = "company_id", referencedColumnName = "company_id")
-    @Lazy(true)
     private Company company;
 
     @TableField(exist = false)
     @OneToMany
-    @JoinColumn(name = "man_id", referencedColumnName = "lao_han_id")private List<Child> waWa;
+    @JoinColumn(name = "man_id", referencedColumnName = "lao_han_id")
+    @Lazy(false)
+    private List<Child> waWa;
 
     @TableField(exist = false)
     @OneToMany
@@ -410,6 +412,8 @@ AutoMapper类中的几个常用方法说明：
        mapperEntityCollection(entity_list_or_set)          可以对一个实体类Set或List，实现自动关联。
 
        mapperEntityPage(entity_page)                          可以对一个实体类Page，实现自动关联。
+       
+       mapper(entity_entityListOrSet_entityPage)           统一上边的各种方法，直接对实体类，列表，分页都可以实现自动关联。
 
 
 	  initialize(entity/entityList/entitySet/entityPage,    OneOrMoreLazyPropertyName ...)                   
