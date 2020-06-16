@@ -93,6 +93,7 @@ Company实体类中配置：
 
 
 @Data
+
 public class Company {
     @TableId(value = "company_id")
     private Long id;
@@ -112,6 +113,7 @@ public class Company {
 
 
 @Data
+
 public class Man {
 
     @TableId(value = "man_id")
@@ -143,9 +145,12 @@ Woman实体类配置：
 
 
 @Data
+
 public class Woman {
+
     @TableId(value = "woman_id")
     private Long id;
+    
     private String name;
     
     //一对一
@@ -167,6 +172,7 @@ Man实体类配置：
 
 
 @Data
+
 public class Man {
     @TableId(value = "man_id")
     private Long id;
@@ -197,6 +203,7 @@ Course实体类配置：
 
 
 @Data
+
 public class Course {
     @TableId(value = "course_id")
     private Long id;
@@ -222,6 +229,7 @@ Child实体类配置：
 
 
 @Data
+
 public class Child {
     @TableId("child_id")
     private Long id;
@@ -243,6 +251,7 @@ StudenCourse中间类（多对多必须要有）：
 
 
 @Data
+
 public class StudentCourse {
     //可以有也可以无此ID
     private Long id;
@@ -271,8 +280,10 @@ public class StudentCourse {
 
 
 @Configuration
+
 public class AutoMapperConfig {
-    @Bean
+
+	@Bean
     public AutoMapper autoMapper() {
         return new AutoMapper(new String[] { "demo.entity","demo.bean" }); //配置实体类所在目录（可多个,暂时不支持通过符*号配置）
     }
@@ -289,8 +300,11 @@ public class AutoMapperConfig {
 
 
 @Data
+
 @AutoLazy  //不需要手动触发加载延迟属性，当延迟属性被调用时自动创建Session进行获取。可见如果有多个延迟属性需要被使用时，会造成多次创建Session，此时可以标注为AutoLazy(false)或不标注，然后采用initialze方法手动一次性加载需要的属性
+
 public class Man { 
+
     @TableId(value = "man_id")
     private Long id;
 
