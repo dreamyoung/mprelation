@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -46,15 +47,17 @@ public class AutoMapper extends AbstractAutoMapper {
 				if (url != null) {
 					String protocol = url.getProtocol();
 					if (protocol.equals("file")) {
-						File file = new File(url.getPath());
+						File file = new File(URLDecoder.decode(url.getPath()));
 						File[] files = file.listFiles();
-						for (File childFile : files) {
-							String fileName = childFile.getName();
-							if (fileName.endsWith(".class") && !fileName.contains("$")) {
-								String className = entityPackage + "." + fileName.substring(0, fileName.length() - 6);
+						if(files != null) {
+							for (File childFile : files) {
+								String fileName = childFile.getName();
+								if (fileName.endsWith(".class") && !fileName.contains("$")) {
+									String className = entityPackage + "." + fileName.substring(0, fileName.length() - 6);
 
-								autoMapperBean(className);
+									autoMapperBean(className);
 
+								}
 							}
 						}
 					} else if(protocol.equals("jar")){//JAR
